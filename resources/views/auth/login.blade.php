@@ -11,12 +11,15 @@
         <span class='text-base font-normal'>Đăng nhập</span>
     </x-blog::button>
 
-    <p>Đăng nhập bằng</p>
+    <span class='text-sm'>Đăng nhập bằng</span>
 
-    <x-blog::button class='bg-[#43618c] hover:bg-[#1d8acb]'>
+    <x-blog::link routeName='facebook-login'
+        class='bg-[#43618c] hover:bg-[#1d8acb] normal-case text-white hover:text-white hover:no-underline flex flex-row justify-center
+p-2 rounded-sm text-lg font-extrabold'>
         <x-blog::icons.facebook />
         <p class='my-auto'>Facebook</p>
-    </x-blog::button>
+    </x-blog::link>
+
 
     <x-blog::link routeName='forgot-password'>Quên mật khẩu?</x-blog::link>
 

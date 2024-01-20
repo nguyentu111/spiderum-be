@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 class ForgotPasswordController extends Controller
 {
     public function show() {
-        return view('auth.login');
+        return view('auth.forgot-password');
     }
 
     public function store() {

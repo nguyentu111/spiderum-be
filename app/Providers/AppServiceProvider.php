@@ -15,5 +15,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'blog');
+        // $this->load(__DIR__ . '/../../resources/views', 'blog');
     }
 }

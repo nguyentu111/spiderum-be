@@ -5,16 +5,9 @@
         <img class='h-20' src={{ asset('assets/images/spiderum-logo.png') }}>
     </a>
 
-    <p>Đăng ký bằng</p>
+    <span class='text-sm'>Vui lòng nhập địa chỉ email của bạn để được cấp lại mật khẩu</span>
 
-    <x-blog::button class='bg-[#43618c] hover:bg-[#1d8acb]'>
-        <x-blog::icons.facebook />
-        <p class='my-auto'>Facebook</p>
-    </x-blog::button>
-
-    <p class='pt-1'>Đăng ký bằng email</p>
-    <x-blog::text-input placeholder="email@gmail.com" type='email' name='email' />
-
+    <x-blog::text-input placeholder="email@gmail.com" name='email' />
 
     <div class="flex flex-row gap-4">
         <span class='text-sm'>Thư xác nhận sẽ được gửi vào hòm thư của bạn</span>
@@ -22,8 +15,4 @@
             <span class='text-sm'>Gửi</span>
         </x-blog::button>
     </div>
-    <p>
-        Đã có tài khoản?
-        <x-blog::link routeName='login'>Đăng nhập</x-blog::link>
-    </p>
 @stop
