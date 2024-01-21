@@ -36,7 +36,7 @@ class MailRegisterService extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'auth.mail-register',
+            markdown: 'auth.mail-register',
         );
     }
 
