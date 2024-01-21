@@ -18,5 +18,6 @@ Route::prefix('auth')->group(function () {
 
     Route::get('/facebook/callback', [FacebookController::class, 'show'])->name('facebook-login');
 
-    Route::get('/mail-send', [MailController::class, 'show'])->name('mail-send');
+    Route::get('/mail', [MailController::class, 'show']);
+    Route::post('/mail-send-to-register', [MailController::class, '__invoke'])->name('mail-send-register');
 });

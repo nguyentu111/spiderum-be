@@ -9,14 +9,15 @@ use Illuminate\Support\Facades\Mail;
 
 class MailController extends Controller
 {
-    public function show(Request $request)
+    public function show()
     {
-        // dd(Mail::to($request->get('email'))->send(new MailService()));
         return view('auth.mail');
     }
-
-    public function store()
+    public function __invoke(Request $request)
     {
+        $email = $request->email;
+        Mail::to($email)->send(new MailService());
 
+        return view('auth.mail');
     }
 }
