@@ -26,7 +26,7 @@ class MailController extends Controller
             Mail::to($email)->send(new MailRegisterService());
 
             return response()->json([
-                'message' => 'Email xác nhận đã được gửi đến hòm thư' . $email . ' của bạn.',
+                'message' => 'Email xác nhận đã được gửi đến hòm thư ' . $email . ' của bạn.',
                 'statusCode' => 200
             ]);
         } catch (Exception $exception) {

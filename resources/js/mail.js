@@ -1,10 +1,22 @@
 import { Alert } from './helper/alert.js'
 import { validateEmail } from './helper/validate.js';
 
-const alert = new Alert('Gửi email', 'haha');
 
 const sendBtn = $('#send-mail-register-btn');
 const emailInput = $('input[type="email"]');
+const loading = $('#loading-icon').hide();
+
+$(document)
+    .ajaxStart(function () {
+        sendBtn.attr('disabled', true)
+        sendBtn.css('cursor', 'not-allowed')
+        loading.show();
+    })
+    .ajaxStop(function () {
+        sendBtn.attr('disabled', false)
+        sendBtn.css('cursor', 'pointer')
+        loading.hide();
+    });
 
 sendBtn.on('click', (event) => {
     const email = emailInput.val();
@@ -21,7 +33,15 @@ sendBtn.on('click', (event) => {
                 email: email
             },
             success: (result) => {
-                console.log(result)
+                if (result.statusCode == 200) {
+                    const alert = new Alert(result.message, 'success');
+                    alert.action();
+                    emailInput.val('');
+                }
+                else {
+                    const alert = new Alert(result.message, 'error');
+                    alert.action();
+                }
             }
         })
     }

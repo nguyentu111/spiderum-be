@@ -7,9 +7,8 @@ export class AlertColor {
 }
 
 export class Alert {
-    constructor(message, id, type) {
+    constructor(message, type) {
         this.message = message;
-        this.id = id;
         this.alertColor = alertType[type];
         this.headAlert = $('#head-alert');
         const closeBtn = $('#close-alert');

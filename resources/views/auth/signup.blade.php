@@ -21,6 +21,8 @@
             <span class='text-sm'>Thư xác nhận sẽ được gửi vào hòm thư của bạn</span>
             <x-blog::button type='submit' id='send-mail-register-btn'
                 class='bg-sky-500 hover:bg-sky-600 text-base !font-normal px-4 py-2'>
+
+                <div id='loading-icon'><x-blog::icons.loading /></div>
                 <span class='text-sm'>Gửi</span>
             </x-blog::button>
         </div>
