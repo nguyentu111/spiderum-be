@@ -13,7 +13,7 @@
     </x-blog::button>
 
     <form class='w-full flex flex-col gap-4'>
-
+        @csrf
         <p class='pt-1'>Đăng ký bằng email</p>
         <x-blog::text-input placeholder="email@gmail.com" type='email' name='email' required />
 
