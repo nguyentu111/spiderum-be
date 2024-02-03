@@ -10,12 +10,12 @@ use Illuminate\Support\Facades\Mail;
 
 class MailController extends Controller
 {
-    public function show()
+    public function show(Request $request)
     {
         return view('auth.mail-register');
     }
 
-    public function signup(Request $request)
+    public function store(Request $request)
     {
         try {
             $validated = $request->validate([

@@ -12,7 +12,7 @@
         <p class='my-auto'>Facebook</p>
     </x-blog::button>
 
-    <form class='w-full flex flex-col gap-4'>
+    <form class='w-full flex flex-col gap-4' method="POST">
         @csrf
         <p class='pt-1'>Đăng ký bằng email</p>
         <x-blog::text-input placeholder="email@gmail.com" type='email' name='email' required />
@@ -21,7 +21,6 @@
             <span class='text-sm'>Thư xác nhận sẽ được gửi vào hòm thư của bạn</span>
             <x-blog::button type='submit' id='send-mail-register-btn'
                 class='bg-sky-500 hover:bg-sky-600 text-base !font-normal px-4 py-2'>
-
                 <div id='loading-icon'><x-blog::icons.loading /></div>
                 <span class='text-sm'>Gửi</span>
             </x-blog::button>

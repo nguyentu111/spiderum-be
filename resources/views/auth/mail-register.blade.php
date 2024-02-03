@@ -65,7 +65,7 @@
             chỉ sử dụng được trong vòng
             30 phút):
         </span>
-        <a id='btn' href='{{ route('mail-send-register') }}'>
+        <a id='btn' href='{{ route('sign-up') }}'>
             <p class='btn-text'>Đăng ký tài khoản với email</p>
             <div class='icon'>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
