@@ -11,13 +11,10 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
+            $table->uuid('id')->primary();
             $table->string('alias', 100);
-            $table->string('description', 1000);
             $table->string('avatar_url')->nullable();
             $table->string('facebook_id')->nullable();
-            $table->string('email')->unique();
             $table->string('username')->unique();
             $table->string('password');
             $table->rememberToken();

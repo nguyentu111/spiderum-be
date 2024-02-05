@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Rules\ReCaptchaV3;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use ReCaptcha\ReCaptcha;
 
 class UserController extends Controller
 {
@@ -32,11 +34,15 @@ class UserController extends Controller
         //         'errorMessage' => 'Có lỗi xảy ra. Xin vui lòng thử lại sau.'
         //     ]);
         // }
-    }
+    } 
 
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'g-recaptcha-response' => ['required', new ReCaptchaV3('submitContact')]
+        ]);
+
+         return redirect()->back()->with('message', 'Thank you for contacting us. Your message has been sent. ');
     }
 
     public function show(string $id)
