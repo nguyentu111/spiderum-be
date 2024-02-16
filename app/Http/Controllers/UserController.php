@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateUser;
 use App\Models\User;
 use App\Models\UserInfo;
-use App\Rules\ReCaptchaV3;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -49,7 +48,7 @@ class UserController extends Controller
                     'password' => $request->get('password'),
                     'alias' => $request->get('alias'),
                 ]);
-
+                dd($user);
                 $userInfo = UserInfo::create([
                     'email' => $request->get('email'),
                     'phone_number' => $request->get('phone_number') ?? null,

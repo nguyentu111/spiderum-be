@@ -14,10 +14,10 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('description', 1000)->nullable();
-            $table->string('phone_number', 15);
+            $table->string('phone_number', 15)->nullable();
             $table->string('email')->unique();
             $table->datetime('dob')->nullable();
-            $table->string('id_number', 20);
+            $table->string('id_number', 20)->nullable();
             $table->uuid('user_id');
             $table->foreign('user_id')->references('id')->on('users');
             $table->timestamps();

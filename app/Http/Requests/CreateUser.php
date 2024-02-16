@@ -8,12 +8,9 @@ use Illuminate\Validation\Rules\Password;
 
 class CreateUser extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -42,16 +39,15 @@ class CreateUser extends FormRequest
             'alias' => ['required', 'max:100'],
             'email' => ['required', 'email', 'unique:user_infos,email'],
             'id_number' => [
-                'string',
+                'nullable',
                 'regex:/[0-9]/',
                 'not_regex:/[a-z]/',
                 'max:20'
             ],
             'phone_number' => [
-                'string',
+                'nullable',
                 'regex:/(0)[0-9]/',
                 'not_regex:/[a-z]/',
-                'unique:user_infos,phone_number'
             ]
         ];
     }

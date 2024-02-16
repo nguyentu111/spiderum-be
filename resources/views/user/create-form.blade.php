@@ -24,9 +24,10 @@
             </div>
         @endif
         <x-blog::text-input placeholder="Tên đăng nhập" type='text' name='username' required />
-        <x-blog::text-input placeholder="Tên hiển thị" type='text' name='name' required />
+        <x-blog::text-input placeholder="Tên hiển thị" type='text' name='alias' required />
+        <x-blog::text-input placeholder="Mật khẩu" type='text' name='email' value='{{ $email }}' required class='hidden'/>
         <x-blog::text-input placeholder="Mật khẩu" type='password' name='password' required />
-        <x-blog::text-input placeholder="Nhập lại mật khẩu" type='password' name='confirmation_password' required />
+        <x-blog::text-input placeholder="Nhập lại mật khẩu" type='password' name='password_confirmation' required />
 
         <x-blog::button type='button' id='toggle-more-info'
             class='!bg-gray-100 hover:!bg-gray-200  !border border-slate-300 !justify-start'>
