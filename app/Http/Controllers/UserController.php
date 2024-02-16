@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Rules\ReCaptchaV3;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use ReCaptcha\ReCaptcha;
 
 class UserController extends Controller
@@ -16,25 +17,21 @@ class UserController extends Controller
 
     public function create(Request $request)
     {
-        $tokenScript = $request->query('token');
+        $token = $request->query('token');
 
-        return view('user.create-form', [
-            'errorMessage' => 'Có lỗi xảy ra. Xin vui lòng thử lại sau.'
-        ]);
-        // [$token, $expiryTime] = explode('|', $tokenScript);
+        $decodeToken = Crypt::decryptString($token);
+        [$email, $expiryTime] = explode('|', $decodeToken);
 
-        // $expiryTime = Carbon::parse($expiryTime);
+        $expiryTime = Carbon::parse($expiryTime);
 
-        // if ($expiryTime->lt(Carbon::now())) {
-        //     return view('user.create-form', [
-        //         '' => 'Có lỗi xảy ra. Xin vui lòng thử lại sau.'
-        //     ]);
-        // } else {
-        //     return view('user.create-form', [
-        //         'errorMessage' => 'Có lỗi xảy ra. Xin vui lòng thử lại sau.'
-        //     ]);
-        // }
-    } 
+        if ($expiryTime->lt(Carbon::now())) {
+            return view('user.create-form');
+        } else {
+            return view('user.create-form', [
+                'errorMessage' => 'Có lỗi xảy ra. Xin vui lòng thử lại sau.'
+            ]);
+        }
+    }
 
     public function store(Request $request)
     {

@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Mail\MailRegisterService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Crypt;
 
 class MailController extends Controller
 {
@@ -23,7 +25,9 @@ class MailController extends Controller
             ]);
 
             $email = $validated['email'];
-            Mail::to($email)->send(new MailRegisterService());
+            $token = $this->createToken($email);
+
+            Mail::to($email)->send(new MailRegisterService($token));
 
             return response()->json([
                 'message' => 'Email xác nhận đã được gửi đến hòm thư ' . $email . ' của bạn.',
@@ -36,5 +40,14 @@ class MailController extends Controller
                 'statusCode' => 500
             ]);
         }
+    }
+
+    public function createToken(string $email): string {
+        $now = Carbon::now();
+
+        $tokenScript = $email . '|' . $now->addMinutes(30);
+        $token = Crypt::encryptString($tokenScript);
+
+        return $token;
     }
 }

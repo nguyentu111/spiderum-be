@@ -12,12 +12,13 @@ class MailRegisterService extends Mailable
 {
     use Queueable, SerializesModels;
 
+    private string $token;
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct(string $token)
     {
-        //
+        $this->token = $token;
     }
 
     /**
@@ -37,6 +38,9 @@ class MailRegisterService extends Mailable
     {
         return new Content(
             markdown: 'auth.mail-register',
+            with: [
+                'token' => $this->token
+            ]
         );
     }
 
