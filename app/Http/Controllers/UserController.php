@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateUser;
+use App\Models\User;
+use App\Models\UserInfo;
 use App\Rules\ReCaptchaV3;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
-use ReCaptcha\ReCaptcha;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -26,7 +30,7 @@ class UserController extends Controller
         if ($expiryTime->lt(Carbon::now())) {
             return view('user.create-form', [
                 'email' => $email,
-                'errorMessage' => 'Có lỗi xảy ra. Xin vui lòng thử lại sau.'
+                'errorMessage' => 'Đường dẫn đã hết hạn. Vui lòng xác thực lại email.'
             ]);
         } else {
             return view('user.create-form', [
@@ -36,13 +40,30 @@ class UserController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(CreateUser $request)
     {
-        $request->validate([
-            'g-recaptcha-response' => ['required', new ReCaptchaV3('submitContact')]
-        ]);
+        try {
+            DB::transaction(function () use ($request) {
+                $user = User::create([
+                    'username' => $request->get('username'),
+                    'password' => $request->get('password'),
+                    'alias' => $request->get('alias'),
+                ]);
 
-         return redirect()->back()->with('message', 'Thank you for contacting us. Your message has been sent. ');
+                $userInfo = UserInfo::create([
+                    'email' => $request->get('email'),
+                    'phone_number' => $request->get('phone_number') ?? null,
+                    'id_number' => $request->get('id_number') ?? null,
+                ]);
+
+                $userInfo->user()->save($user);
+            });
+        }
+        catch (Exception $exception) {
+            return redirect()->back()->with('errorMessage', $exception->getMessage());
+        }
+
+        return redirect()->back()->with('errorMessage', 'Đăng ký thành công.');
     }
 
     public function show(string $id)

@@ -29,11 +29,11 @@
         <x-blog::text-input placeholder="Nhập lại mật khẩu" type='password' name='confirmation_password' required />
 
         <x-blog::button type='button' id='toggle-more-info'
-            class='!bg-gray-100 hover:!bg-gray-200 !text-gray-600 !border border-slate-300'>
-            <span class='text-base font-normal !text-black'>Thông tin khác</span>
+            class='!bg-gray-100 hover:!bg-gray-200  !border border-slate-300 !justify-start'>
+            <span class='text-base font-normal !text-gray-600'>Thông tin khác</span>
         </x-blog::button>
 
-        <div id='card' class='none'>
+        <div id='card' class='none '>
             <div class='flex flex-col gap-4 '>
                 <x-blog::text-input placeholder="Số chứng minh nhân dân" type='text' name='id_number' />
                 <x-blog::text-input placeholder="Số điện thoại" type='text' name='phone_number' />
@@ -51,8 +51,7 @@
             data-callback='onSubmit' data-action='submitContact' id='register-btn'>
             <span class='text-base font-normal'>Đăng ký</span>
         </x-blog::button>
-        {{-- <button id='register-btn' class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"
-            data-callback="onSubmit" data-action="submitContact">Đăng kí</button> --}}
+
     </form>
 @stop
 
