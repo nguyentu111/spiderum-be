@@ -23,12 +23,15 @@ class UserController extends Controller
         [$email, $expiryTime] = explode('|', $decodeToken);
 
         $expiryTime = Carbon::parse($expiryTime);
-
         if ($expiryTime->lt(Carbon::now())) {
-            return view('user.create-form');
+            return view('user.create-form', [
+                'email' => $email,
+                'errorMessage' => 'Có lỗi xảy ra. Xin vui lòng thử lại sau.'
+            ]);
         } else {
             return view('user.create-form', [
-                'errorMessage' => 'Có lỗi xảy ra. Xin vui lòng thử lại sau.'
+                'email' => $email,
+                'errorMessage' => ''
             ]);
         }
     }

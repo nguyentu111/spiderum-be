@@ -1,5 +1,6 @@
 @extends('layout.auth')
 
+
 @section('content')
     <a class='mx-auto' href={{ route('welcome') }}>
         <img class='h-20' src={{ asset('assets/images/spiderum-logo.png') }}>
@@ -46,18 +47,18 @@
             của
             <span class='font-semibold'>Spiderum</span>
         </p>
-        {{-- <x-blog::button class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"
-            data-callback='onSubmit' data-action='submit' id='register-btn'>
+        <x-blog::button class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"
+            data-callback='onSubmit' data-action='submitContact' id='register-btn'>
             <span class='text-base font-normal'>Đăng ký</span>
-        </x-blog::button> --}}
-        <button id='register-btn' class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"
-            data-callback="onSubmit" data-action="submitContact">Đăng kí</button>
+        </x-blog::button>
+        {{-- <button id='register-btn' class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"
+            data-callback="onSubmit" data-action="submitContact">Đăng kí</button> --}}
     </form>
-
-    {{-- <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}">
-
-    </div> --}}
 @stop
+
+<script>
+    const errorMessage = @json($errorMessage);
+</script>
 
 @section('javascript')
     @vite('resources/js/user.js')

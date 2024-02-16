@@ -1,7 +1,6 @@
 import { Alert } from './helper/alert.js'
 import { validateEmail } from './helper/validate.js';
 
-
 const sendBtn = $('#send-mail-register-btn');
 const emailInput = $('input[type="email"]');
 const loading = $('#loading-icon').hide();

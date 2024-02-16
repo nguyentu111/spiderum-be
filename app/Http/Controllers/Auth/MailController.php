@@ -45,7 +45,8 @@ class MailController extends Controller
     public function createToken(string $email): string {
         $now = Carbon::now();
 
-        $tokenScript = $email . '|' . $now->addMinutes(30);
+        // $tokenScript = $email . '|' . $now->addMinutes(30);
+        $tokenScript = $email . '|' . $now;
         $token = Crypt::encryptString($tokenScript);
 
         return $token;
