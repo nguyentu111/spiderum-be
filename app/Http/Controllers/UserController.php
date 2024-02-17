@@ -8,6 +8,7 @@ use App\Models\UserInfo;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 
@@ -42,7 +43,7 @@ class UserController extends Controller
     public function store(CreateUser $request)
     {
         try {
-            DB::transaction(function () use ($request) {
+            $user = DB::transaction(function () use ($request) {
                 $user = User::create([
                     'username' => $request->get('username'),
                     'password' => $request->get('password'),
@@ -54,22 +55,19 @@ class UserController extends Controller
                     'id_number' => $request->get('id_number') ?? null,
                     'user_id' => $user->getKey()
                 ]);
+
+                return $user;
             });
+            $token = $user->createToken('main')->plainTextToken;
+            $cookie = Cookie::make('token', $token, 864);
+
+            return redirect()->to(env('FRONT_END_URL'))->withCookie($cookie);
         }
         catch (Exception $exception) {
-            return response()->json([
-                'status' => 400,
+            return redirect()->back()->with([
                 'errorMessage' => $exception->getMessage()
             ]);
-            // return redirect()->back()->with('errorMessage', $exception->getMessage());
         }
-
-        return response()->json([
-            'status' => 400,
-            'message' => 'Đăng ký tài khoản thành công.'
-        ]);
-
-        // return redirect()->back()->with('errorMessage', 'Đăng ký thành công.');
     }
 
     public function show(string $id)

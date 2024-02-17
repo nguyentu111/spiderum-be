@@ -9,7 +9,13 @@ trait Uuidable {
         parent::boot();
 
         static::creating(function (Model $model) {
-            $model->{$model->getKeyName()} = Uuid::uuid4()->toString();
+            $model->keyType = 'string';
+            $model->primaryKey = 'id';
+            $model->incrementing = false;
+
+            if (empty($model->{$model->getKeyName()})) {
+                $model->{$model->getKeyName()} = Uuid::uuid4()->toString();
+            }
         });
     }
 }
