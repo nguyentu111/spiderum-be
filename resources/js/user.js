@@ -12,3 +12,8 @@ if (errorMessage) {
         .css('pointer-events', 'none')
 }
 
+if (errors) {
+    const errorAlert = new Alert(errors.join('<br/>'), 'error');
+    console.log(errorAlert.alertColor);
+    errorAlert.actionWithHTML();
+}

@@ -47,6 +47,15 @@ export class Alert {
         $('#head-alert span').text(this.message);
     }
 
+    addHTML() {
+        $('#head-alert span').html(this.message);
+    }
+
+    actionWithHTML() {
+        this.showAlert();
+        this.addHTML();
+    }
+
     action() {
         this.showAlert();
         this.addText();

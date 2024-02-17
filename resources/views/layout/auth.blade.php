@@ -20,7 +20,7 @@
     <div id='head-alert'
         class='fixed hidden flex-row w-full justify-between p-2 bg-lime-50 border border-lime-400 text-lime-600'>
         <span></span>
-        <div id='close-alert' class='cursor-pointer opacity-40 hover:opacity-80 duration-200'>
+        <div id='close-alert' class='cursor-pointer opacity-40 hover:opacity-80 duration-200 my-auto'>
             <x-blog::icons.close />
         </div>
     </div>

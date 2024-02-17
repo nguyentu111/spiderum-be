@@ -57,10 +57,19 @@ class UserController extends Controller
             });
         }
         catch (Exception $exception) {
-            return redirect()->back()->with('errorMessage', $exception->getMessage());
+            return response()->json([
+                'status' => 400,
+                'errorMessage' => $exception->getMessage()
+            ]);
+            // return redirect()->back()->with('errorMessage', $exception->getMessage());
         }
 
-        return redirect()->back()->with('errorMessage', 'Đăng ký thành công.');
+        return response()->json([
+            'status' => 400,
+            'message' => 'Đăng ký tài khoản thành công.'
+        ]);
+
+        // return redirect()->back()->with('errorMessage', 'Đăng ký thành công.');
     }
 
     public function show(string $id)

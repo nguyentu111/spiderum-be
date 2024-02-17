@@ -9,7 +9,7 @@
     <form id="register-form" class='w-full flex flex-col gap-4' method="POST" action="{{ route('store-user') }}">
         @csrf
 
-        @if (session()->has('message'))
+        {{-- @if (session()->has('message'))
             <div class="alert alert-success">
                 {{ session()->get('message') }}
             </div>
@@ -22,7 +22,8 @@
                     @endforeach
                 </ul>
             </div>
-        @endif
+        @endif --}}
+
         <x-blog::text-input placeholder="Tên đăng nhập" type='text' name='username' required />
         <x-blog::text-input placeholder="Tên hiển thị" type='text' name='alias' required />
         <x-blog::text-input placeholder="Mật khẩu" type='text' name='email' value='{{ $email }}' required class='hidden'/>
@@ -57,8 +58,14 @@
 @stop
 
 <script>
-    const errorMessage = @json($errorMessage);
+    let errorMessage = @json($errorMessage);
+
 </script>
+@if($errors->any())
+    <script>
+        let errors = @json($errors->all());
+    </script>
+@endif
 
 @section('javascript')
     @vite('resources/js/user.js')
