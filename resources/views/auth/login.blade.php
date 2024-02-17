@@ -4,12 +4,24 @@
     <a class='mx-auto' href={{ route('welcome') }}>
         <img class='h-20' src={{ asset('assets/images/spiderum-logo.png') }}>
     </a>
-    <x-blog::text-input placeholder="Tên đăng nhập hoặc email" name='email' />
-    <x-blog::text-input placeholder="Mật khẩu" type='password' name='password' />
+    @if ($errors->any())
+        <div class="alert alert-danger" role="alert">
+            <ul class="mb-0 mt-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+    <form class='w-full flex flex-col gap-4' method="POST" action='{{ route('handle-login') }}'>
+        @csrf
+        <x-blog::text-input placeholder="Tên đăng nhập hoặc email" name='email' required />
+        <x-blog::text-input placeholder="Mật khẩu" type='password' name='password' required />
 
-    <x-blog::button>
-        <span class='text-base font-normal'>Đăng nhập</span>
-    </x-blog::button>
+        <x-blog::button type='submit'>
+            <span class='text-base font-normal'>Đăng nhập</span>
+        </x-blog::button>
+    </form>
 
     <span class='text-sm'>Đăng nhập bằng</span>
 

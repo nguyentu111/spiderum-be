@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
 
 class UserController extends Controller
 {
@@ -61,7 +62,7 @@ class UserController extends Controller
             $token = $user->createToken('main')->plainTextToken;
             $cookie = Cookie::make('token', $token, 864);
 
-            return redirect()->to(env('FRONT_END_URL'))->withCookie($cookie);
+            return Redirect::away(env('FRONT_END_URL'))->withCookie($cookie);
         }
         catch (Exception $exception) {
             return redirect()->back()->with([

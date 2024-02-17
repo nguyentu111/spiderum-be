@@ -14,6 +14,7 @@ Route::get('/', function () {
 
 Route::prefix('auth')->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
+    Route::post('/login', [LoginController::class, 'store'])->name('handle-login');
     Route::get('/sign-up', [SignUpController::class, 'show'])->name('sign-up');
     Route::get('/forgot-password', [ForgotPasswordController::class, 'show'])->name('forgot-password');
 
