@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
+use App\Traits\Uuidable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class UserInfo extends Model
 {
-    use HasFactory;
+    use HasFactory, Uuidable;
+
+    protected $primary = 'id';
+
+    public $incrementing = false;
 
     protected $fillable = [
         'email',
@@ -15,10 +20,11 @@ class UserInfo extends Model
         'dob',
         'name',
         'description',
-        'id_number'
+        'id_number',
+        'user_id'
     ];
 
-    protected $timestamps = true;
+    public $timestamps = true;
 
     public function user(User $user)
     {

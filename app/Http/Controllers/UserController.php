@@ -48,14 +48,12 @@ class UserController extends Controller
                     'password' => $request->get('password'),
                     'alias' => $request->get('alias'),
                 ]);
-                dd($user);
-                $userInfo = UserInfo::create([
+                UserInfo::create([
                     'email' => $request->get('email'),
                     'phone_number' => $request->get('phone_number') ?? null,
                     'id_number' => $request->get('id_number') ?? null,
+                    'user_id' => $user->getKey()
                 ]);
-
-                $userInfo->user()->save($user);
             });
         }
         catch (Exception $exception) {
