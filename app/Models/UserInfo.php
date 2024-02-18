@@ -18,7 +18,6 @@ class UserInfo extends Model
         'email',
         'phone_number',
         'dob',
-        'name',
         'description',
         'id_number',
         'user_id'

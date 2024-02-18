@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateUser;
 use App\Models\User;
 use App\Models\UserInfo;
+use App\Supports\UserResponse;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -71,9 +72,15 @@ class UserController extends Controller
         }
     }
 
-    public function show(string $id)
+    public function show(Request $request)
     {
-        //
+        $user = $request->user();
+        $userResponse = new UserResponse($user, $user->userInfo());
+        return response()->json([
+            'message' => 'Lấy thông tin người dùng thành công',
+            'status' => 200,
+            'data' => $userResponse->getResponse()
+        ]);
     }
 
     public function edit(string $id)
@@ -81,9 +88,37 @@ class UserController extends Controller
         //
     }
 
-    public function update(Request $request, string $id)
+    public function update(Request $request)
     {
-        //
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Token không khả dụng.'
+            ]);
+        }
+        try {
+            $updatedUser = DB::transaction(function () use ($request, $user) {
+                $user->update($request->all());
+                $user->userInfo()->update($request->all());
+
+                return $user;
+            });
+            $userInfo = $updatedUser->userInfo();
+            $userResponse = new UserResponse($updatedUser, $userInfo);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Cập nhật thông tin thành công.',
+                'data' => $userResponse->getResponse()
+            ]);
+        }
+        catch (Exception $exception) {
+            return response()->json([
+                'status' => 500,
+                'errorMessage' => $exception->getMessage()
+            ]);
+        }
     }
 
     public function destroy(string $id)
