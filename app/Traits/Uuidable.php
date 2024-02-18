@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 use Illuminate\Database\Eloquent\Model;
-use Ramsey\Uuid\Uuid;
+use Illuminate\Support\Str;
 
 trait Uuidable {
     protected static function boot() {
@@ -14,7 +14,7 @@ trait Uuidable {
             $model->incrementing = false;
 
             if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = Uuid::uuid4()->toString();
+                $model->{$model->getKeyName()} = Str::uuid4()->toString();
             }
         });
     }
