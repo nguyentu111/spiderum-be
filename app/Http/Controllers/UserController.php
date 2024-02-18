@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateUser;
+use App\Http\Requests\UpdateUser;
 use App\Models\User;
 use App\Models\UserInfo;
 use App\Supports\UserResponse;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -88,19 +91,25 @@ class UserController extends Controller
         //
     }
 
-    public function update(Request $request)
+    public function update(UpdateUser $request)
     {
         $user = $request->user();
+
         if (!$user) {
             return response()->json([
                 'status' => 200,
                 'message' => 'Token không khả dụng.'
             ]);
         }
+
+        $data = Validator::make($request->all(), [
+            'email' => Rule::unique('user_infos', 'email')->ignore($user->userInfo()->email),
+        ])->validated();
+
         try {
-            $updatedUser = DB::transaction(function () use ($request, $user) {
+            $updatedUser = DB::transaction(function () use ($request, $user, $data) {
                 $user->update($request->all());
-                $user->userInfo()->update($request->all());
+                $user->userInfo()->update([...$request->all(), 'email' => $data['email']]);
 
                 return $user;
             });
@@ -123,6 +132,6 @@ class UserController extends Controller
 
     public function destroy(string $id)
     {
-        //
+
     }
 }
