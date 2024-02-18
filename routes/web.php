@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\FacebookController;
 use App\Http\Controllers\Auth\MailController;
 use App\Http\Controllers\Auth\SignUpController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserFollowerController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -25,7 +26,10 @@ Route::prefix('auth')->group(function () {
 
     Route::prefix('/users')->group(function () {
         Route::get('create', [UserController::class, 'create'])->name('create-user');
-
         Route::post('store', [UserController::class, 'store'])->name('store-user');
+        Route::put('/', [UserController::class, 'update']);
+        Route::post('follow', [UserFollowerController::class, 'follow']);
+        Route::post('unfollow', [UserFollowerController::class, 'unfollow']);
     });
+
 });
