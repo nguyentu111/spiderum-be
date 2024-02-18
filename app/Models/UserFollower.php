@@ -20,4 +20,8 @@ class UserFollower extends Model
     public function source() {
         return $this->belongsTo(User::class);
     }
+
+    public function target() {
+        return $this->belongsTo(User::class);
+    }
 }
