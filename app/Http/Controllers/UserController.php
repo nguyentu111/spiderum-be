@@ -78,7 +78,16 @@ class UserController extends Controller
     public function show(Request $request)
     {
         $user = $request->user();
-        $userResponse = new UserResponse($user, $user->userInfo());
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Xác thực người dùng thất bại.',
+                'status' => 404,
+                'data' => $user
+            ], 401);
+        }
+
+        $userResponse = new UserResponse($user, $user->userInfo);
         return response()->json([
             'message' => 'Lấy thông tin người dùng thành công',
             'status' => 200,

@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -52,5 +54,10 @@ class User extends Authenticatable
     public function userInfo(): HasOne
     {
         return $this->hasOne(UserInfo::class);
+    }
+
+    public function followers(): HasMany
+    {
+        return $this->hasMany(UserFollower::class, 'source_id', 'id');
     }
 }

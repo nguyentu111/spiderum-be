@@ -8,6 +8,17 @@ use Illuminate\Http\Request;
 
 class UserFollowerController extends Controller
 {
+    public function getFollowers(Request $request) {
+        $user = $request->user();
+        $followers = $user->followers();
+
+        return response()->json([
+            'status' => 200,
+            'message' => "Lấy thông tin người theo dỗi thành công.",
+            'data' => $followers
+        ]);
+    }
+
     public function follow(Request $request) {
         $user = $request->user();
 
