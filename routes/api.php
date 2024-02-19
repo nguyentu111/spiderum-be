@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserFollowerController;
 use Illuminate\Http\Request;
@@ -17,5 +18,12 @@ Route::middleware(['cookie.token', 'auth:sanctum'])->group(function () {
     Route::post('/unfollow', [UserFollowerController::class, 'unfollow']);
 
     Route::put('/update-profile', [UserController::class, 'update']);
+
+    Route::prefix('/categories')->group(function () {
+        Route::get('/', [CategoryController::class, 'index']);
+        Route::post('/', [CategoryController::class, 'store']);
+        Route::post('/{id}', [CategoryController::class, 'update']);
+        Route::delete('/{id}', [CategoryController::class, 'destroy']);
+    });
 });
 

@@ -26,7 +26,6 @@ Route::prefix('auth')->group(function () {
     Route::prefix('/users')->group(function () {
         Route::get('create', [UserController::class, 'create'])->name('create-user');
         Route::post('store', [UserController::class, 'store'])->name('store-user');
-        Route::put('/', [UserController::class, 'update']);
     });
 });
 
