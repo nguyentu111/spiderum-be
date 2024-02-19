@@ -10,6 +10,10 @@ class UserFollower extends Model
 {
     use HasFactory, Uuidable;
 
+    protected $primary = 'id';
+
+    public $incrementing = false;
+
     protected $fillable = [
         'source_id',
         'target_id',

@@ -10,7 +10,8 @@ class UserFollowerController extends Controller
 {
     public function getFollowers(Request $request) {
         $user = $request->user();
-        $followers = $user->followers;
+        $follwerIds = $user->followers->pluck('target_id');
+        $followers = User::query()->select(['id', 'alias'])->whereIn('id', $follwerIds)->get();
 
         return response()->json([
             'status' => 200,

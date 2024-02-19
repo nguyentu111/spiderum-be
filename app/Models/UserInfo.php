@@ -10,6 +10,7 @@ class UserInfo extends Model
 {
     use HasFactory, Uuidable;
 
+
     protected $primary = 'id';
 
     public $incrementing = false;
