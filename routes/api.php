@@ -22,6 +22,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::middleware(['cookie.token', 'auth:sanctum'])->group(function () {
     Route::get('/profile', [UserController::class, 'show']);
+    Route::get('/followers', [UserFollowerController::class, 'getFollowers']);
     Route::post('/follow', [UserFollowerController::class, 'follow']);
     Route::post('/unfollow', [UserFollowerController::class, 'unfollow']);
 });

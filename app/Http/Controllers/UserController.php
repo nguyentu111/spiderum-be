@@ -69,9 +69,12 @@ class UserController extends Controller
             return Redirect::away(env('FRONT_END_URL'))->withCookie($cookie);
         }
         catch (Exception $exception) {
-            return redirect()->back()->with([
+            return response()->json([
                 'errorMessage' => $exception->getMessage()
             ]);
+            // return redirect()->back()->with([
+            //     'errorMessage' => $exception->getMessage()
+            // ]);
         }
     }
 
