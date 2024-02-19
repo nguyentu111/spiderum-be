@@ -10,7 +10,7 @@ class UserFollowerController extends Controller
 {
     public function getFollowers(Request $request) {
         $user = $request->user();
-        $followers = $user->followers();
+        $followers = $user->followers;
 
         return response()->json([
             'status' => 200,

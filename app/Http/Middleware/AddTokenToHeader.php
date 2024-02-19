@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class VerifyToken
+class AddTokenToHeader
 {
     /**
      * Handle an incoming request.
@@ -22,9 +22,10 @@ class VerifyToken
                 'message' => "Token xác thực thất bại."
             ], 401);
         }
-        $response = $next($request);
-        $response->header('Authorization', 'Bearer ' . $token);
 
-        return $response;
+        $request->headers->add(['Accept' => 'application/json']);
+        $request->headers->add(['Authorization' => 'Bearer ' . $token]);
+
+        return $next($request);
     }
 }
