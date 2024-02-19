@@ -34,7 +34,7 @@ class UpdateUser extends FormRequest
                 'not_regex:/[a-z]/',
             ],
             'email' => [
-                'required',
+                'sometimes',
                 'email',
             ],
             'dob' => [

@@ -114,18 +114,26 @@ class UserController extends Controller
             ]);
         }
 
-        $data = Validator::make($request->all(), [
-            'email' => Rule::unique('user_infos', 'email')->ignore($user->userInfo()->email),
+        Validator::make($request->all(), [
+            'email' => Rule::unique('user_infos', 'email')->ignore($user->userInfo),
         ])->validated();
 
         try {
-            $updatedUser = DB::transaction(function () use ($request, $user, $data) {
-                $user->update($request->all());
-                $user->userInfo()->update([...$request->all(), 'email' => $data['email']]);
+            $updatedUser = DB::transaction(function () use ($request, $user) {
+                $user->update([
+                    'alias' => $request->get('alias')
+                ]);
+                $user->userInfo()->update([
+                    'email' => $request->get('email'),
+                    'phone_number' => $request->get('phone_number'),
+                    'id_number' => $request->get('id_number'),
+                    'dob' => $request->get('dob'),
+                    'description' => $request->get('description')
+                ]);
 
                 return $user;
             });
-            $userInfo = $updatedUser->userInfo();
+            $userInfo = $updatedUser->userInfo;
             $userResponse = new UserResponse($updatedUser, $userInfo);
 
             return response()->json([
@@ -138,7 +146,7 @@ class UserController extends Controller
             return response()->json([
                 'status' => 500,
                 'errorMessage' => $exception->getMessage()
-            ]);
+            ], 500);
         }
     }
 
