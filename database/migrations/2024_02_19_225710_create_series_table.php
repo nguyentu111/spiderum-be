@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('series', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name', 100);
+            $table->string('slug', 100)->unique();
             $table->string('description', 1000)->nullable();
             $table->string('thumbnail', 1000)->nullable();
             $table->boolean('is_showed')->default(true);

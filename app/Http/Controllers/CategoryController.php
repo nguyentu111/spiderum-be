@@ -46,12 +46,7 @@ class CategoryController extends Controller
         ], 200);
     }
 
-    public function show(string $id)
-    {
-
-    }
-
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id): JsonResponse
     {
         $category = Category::find($id);
 
@@ -91,7 +86,7 @@ class CategoryController extends Controller
         }
     }
 
-    public function destroy(string $id)
+    public function destroy(string $id): JsonResponse
     {
         $category = Category::find($id);
 

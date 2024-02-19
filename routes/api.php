@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\SeriesController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserFollowerController;
 use Illuminate\Http\Request;
@@ -22,8 +23,15 @@ Route::middleware(['cookie.token', 'auth:sanctum'])->group(function () {
     Route::prefix('/categories')->group(function () {
         Route::get('/', [CategoryController::class, 'index']);
         Route::post('/', [CategoryController::class, 'store']);
-        Route::post('/{id}', [CategoryController::class, 'update']);
-        Route::delete('/{id}', [CategoryController::class, 'destroy']);
+        Route::post('/{slug}', [CategoryController::class, 'update']);
+        Route::delete('/{slug}', [CategoryController::class, 'destroy']);
+    });
+
+    Route::prefix('/series')->group(function () {
+        Route::get('/', [SeriesController::class, 'index']);
+        Route::post('/', [SeriesController::class, 'store']);
+        Route::post('/{slug}', [SeriesController::class, 'update']);
+        Route::delete('/{slug}', [SeriesController::class, 'destroy']);
     });
 });
 
