@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Uuidable;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -27,5 +28,10 @@ class UserFollower extends Model
 
     public function target() {
         return $this->belongsTo(User::class);
+    }
+
+    public function scopeFindUserFollower(Builder $query, string $sourceId, string $targetId)
+    {
+        $query->where('source_id', $sourceId)->where('target_id', $targetId);
     }
 }

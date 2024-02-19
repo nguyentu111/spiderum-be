@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\UserFollower;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class UserFollowerController extends Controller
 {
-    public function getFollowers(Request $request) {
+    public function getFollowers(Request $request): JsonResponse {
         $user = $request->user();
-        $follwerIds = $user->followers->pluck('target_id');
+        $follwerIds = $user->followers->pluck('source_id');
         $followers = User::query()->select(['id', 'alias'])->whereIn('id', $follwerIds)->get();
 
         return response()->json([
@@ -20,7 +21,21 @@ class UserFollowerController extends Controller
         ]);
     }
 
-    public function follow(Request $request) {
+    public function getFollowings(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $follwerIds = $user->followings->pluck('target_id');
+        $followers = User::query()->select(['id', 'alias'])->whereIn('id', $follwerIds)->get();
+
+        return response()->json([
+            'status' => 200,
+            'message' => "Lấy thông tin người theo dỗi thành công.",
+            'data' => $followers
+        ]);
+    }
+
+    public function follow(Request $request): JsonResponse
+    {
         $user = $request->user();
 
         $data = $request->validate([
@@ -47,7 +62,8 @@ class UserFollowerController extends Controller
         ]);
     }
 
-    public function unfollow(Request $request) {
+    public function unfollow(Request $request): JsonResponse
+    {
         $user = $request->user();
 
         $data = $request->validate([
@@ -60,15 +76,10 @@ class UserFollowerController extends Controller
             return response()->json([
                 'status' => 404,
                 'errorMessage' => 'Không tìm thấy thông tin người dùng.'
-            ]);
+            ], 404);
         }
 
-        $userFollower = UserFollower::query()
-            ->where('target_id', $target->getKey())
-            ->where('source_id', $user->getKey())
-            ->delete();
-
-        $result = $userFollower->delete();
+        $result = UserFollower::findUserFollower($user->getKey(), $target->getKey())->delete();
 
         if ($result) {
             return response()->json([
@@ -76,10 +87,11 @@ class UserFollowerController extends Controller
                 'message' => 'Hủy theo dõi người dùng thành công.',
             ]);
         }
-
-        return response()->json([
-            'status' => 400,
-            'message' => 'Hủy theo dõi người dùng thất bại.',
-        ]);
+        else {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Hủy theo dõi người dùng thất bại.',
+            ]);
+        }
     }
 }
