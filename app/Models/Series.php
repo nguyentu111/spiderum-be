@@ -6,7 +6,7 @@ use App\Traits\Uuidable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Category extends Model
+class Series extends Model
 {
     use HasFactory, Uuidable;
 
@@ -16,6 +16,9 @@ class Category extends Model
 
     protected $fillable = [
         'name',
-        'slug'
+        'description',
+        'thumbnail',
+        'is_showed',
+        'author_id'
     ];
 }
