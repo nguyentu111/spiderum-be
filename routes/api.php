@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SeriesController;
+use App\Http\Controllers\UpdateImageController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserFollowerController;
 use Illuminate\Http\Request;
@@ -33,5 +34,7 @@ Route::middleware(['cookie.token', 'auth:sanctum'])->group(function () {
         Route::post('/{slug}', [SeriesController::class, 'update']);
         Route::delete('/{slug}', [SeriesController::class, 'destroy']);
     });
+
+    Route::post('/upload-image', [UpdateImageController::class, '__invoke']);
 });
 
