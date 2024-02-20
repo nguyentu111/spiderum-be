@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('slug', 100)->unique();
             $table->string('description', 1000)->nullable();
             $table->string('thumbnail', 1000)->nullable();
-            $table->boolean('is_showed')->default(true);
+            $table->boolean('is_shown')->default(true);
             $table->foreignUuid('author_id')->references('id')->on('users');
             $table->timestamps();
         });

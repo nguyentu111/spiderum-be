@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_like_posts', function (Blueprint $table) {
+        Schema::create('user_save_posts', function (Blueprint $table) {
             $table->foreignUuid('user_id')->references('id')->on('users');
             $table->foreignUuid('post_id')->references('id')->on('posts');
             $table->primary(['user_id', 'post_id']);
@@ -23,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_like_posts');
+        Schema::dropIfExists('user_save_posts');
     }
 };

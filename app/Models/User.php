@@ -80,4 +80,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Post::class, 'author_id', 'id');
     }
+
+    public function postSaved(): BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, 'user_save_posts', 'user_id', 'post_id');
+    }
+
+    public function seriesSaved(): BelongsToMany
+    {
+        return $this->belongsToMany(Series::class, 'user_save_series', 'user_id', 'series_id');
+    }
 }

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('content');
             $table->unsignedBigInteger('like')->default(0);
             $table->unsignedBigInteger('view')->default(0);
-            $table->boolean('isShowed')->default(true);
+            $table->boolean('is_shown')->default(true);
             $table->foreignUuid('author_id')->references('id')->on('users');
             $table->timestamps();
         });
