@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateSeries;
+use App\Models\Post;
 use App\Models\Series;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -135,4 +136,94 @@ class SeriesController extends Controller
             ], 500);
         }
     }
+
+    public function addToSeries(Request $request, string $slugPost, string $slugSeries): JsonResponse
+    {
+        $user = $request->user();
+
+        $post = Post::findBySlug($slugPost)->first();
+        $seriesQuery = Series::findBySlug($slugSeries);
+
+        if ($result = $this->checkPostExist($post)) {
+            return response()->json($result, 404);
+        }
+
+        if (!$seriesQuery->first()) {
+            return response()->json([
+                'errorMessage' => "Không tìm thấy series.",
+                'status' => 404
+            ], 404);
+        }
+
+        if (
+            $user->getKey() !== $post->author_id
+            || $user->getKey() !== $seriesQuery->first()->author_id
+        ) {
+            return response()->json([
+                'message' => "Không có quyền thực hiện chức năng này.",
+                'status' => 200
+            ], 200);
+        }
+
+        try {
+            $seriesQuery->posts()->attach($post->getKey());
+
+            return response()->json([
+                'message' => "Thêm bài viết vào series thành công.",
+                'status' => 200,
+            ], 200);
+        } catch (Exception $exception) {
+            return response()->json([
+                'errorMessage' => $exception->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
+
+    public function removeToSeries(Request $request, string $slugPost, string $slugSeries): JsonResponse
+    {
+        $user = $request->user();
+
+        $post = Post::findBySlug($slugPost)->first();
+        $seriesQuery = Series::findBySlug($slugSeries);
+
+        if (!$post) {
+            return response()->json([
+                'errorMessage' => "Không tìm thấy bài viết.",
+                'status' => 404
+            ], 404);
+        }
+
+        if (!$seriesQuery->first()) {
+            return response()->json([
+                'errorMessage' => "Không tìm thấy series.",
+                'status' => 404
+            ], 404);
+        }
+
+        if (
+            $user->getKey() !== $post->author_id
+            || $user->getKey() !== $seriesQuery->first()->author_id
+        ) {
+            return response()->json([
+                'message' => "Không có quyền thực hiện chức năng này.",
+                'status' => 200
+            ], 200);
+        }
+
+        try {
+            $seriesQuery->posts()->detach($post->getKey());
+
+            return response()->json([
+                'message' => "Loại bỏ bài viết khỏi series thành công.",
+                'status' => 200,
+            ], 200);
+        } catch (Exception $exception) {
+            return response()->json([
+                'errorMessage' => $exception->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
+
 }

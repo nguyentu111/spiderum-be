@@ -6,6 +6,7 @@ use App\Http\Requests\CreatePostRequest;
 use App\Http\Requests\PaginationRequest;
 use App\Models\Post;
 use App\Models\Series;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -34,18 +35,16 @@ class PostController extends Controller
 
         $post = Post::findBySlug($slug)->first();
 
-        if (!$post) {
-            return response()->json([
-                'errorMessage' => "Không tìm thấy bài viết.",
-                'status' => 404
-            ], 404);
+        if ($result = $this->checkPostExist($post)) {
+            return response()->json($result, 404);
         }
 
-        if (!$post->is_shown && $user->getKey() !== $post->author_id) {
-            return response()->json([
-                'message' => "Bài viết đã bị ẩn.",
-                'status' => 200
-            ], 200);
+        if ($result = $this->checkOwnPost($user, $post)) {
+            return response()->json($result, 200);
+        }
+
+        if ($result = $this->checkStatusPost($post)) {
+            return response()->json($result, 200);
         }
 
         $isLiked = in_array($user->getKey(), $post->likes->pluck('user_id'));
@@ -104,18 +103,12 @@ class PostController extends Controller
 
         $post = Post::findBySlug($slug)->first();
 
-        if (!$post) {
-            return response()->json([
-                'errorMessage' => "Không tìm thấy bài viết.",
-                'status' => 404
-            ], 404);
+        if ($result = $this->checkPostExist($post)) {
+            return response()->json($result, 404);
         }
 
-        if ($user->getKey() !== $post->author_id) {
-            return response()->json([
-                'message' => "Không có quyền thực hiện chức năng này.",
-                'status' => 200
-            ], 200);
+        if ($result = $this->checkOwnPost($user, $post)) {
+            return response()->json($result, 200);
         }
 
         try {
@@ -143,18 +136,12 @@ class PostController extends Controller
 
         $post = Post::findBySlug($slug)->first();
 
-        if (!$post) {
-            return response()->json([
-                'errorMessage' => "Không tìm thấy bài viết.",
-                'status' => 404
-            ], 404);
+        if ($result = $this->checkPostExist($post)) {
+            return response()->json($result, 404);
         }
 
-        if ($user->getKey() !== $post->author_id) {
-            return response()->json([
-                'message' => "Không có quyền thực hiện chức năng này.",
-                'status' => 200
-            ], 200);
+        if ($result = $this->checkOwnPost($user, $post)) {
+            return response()->json($result, 200);
         }
 
         try {
@@ -181,11 +168,12 @@ class PostController extends Controller
 
         $query = Post::findBySlug($slug);
 
-        if (!$query->first()) {
-            return response()->json([
-                'errorMessage' => "Không tìm thấy bài viết.",
-                'status' => 404
-            ], 404);
+        if ($result = $this->checkPostExist($query->first())) {
+            return response()->json($result, 404);
+        }
+
+        if ($result = $this->checkStatusPost($query->first())) {
+            return response()->json($result, 404);
         }
         try {
             DB::transaction(function () use ($user, $query) {
@@ -217,11 +205,12 @@ class PostController extends Controller
 
         $query = Post::findBySlug($slug);
 
-        if (!$query->first()) {
-            return response()->json([
-                'errorMessage' => "Không tìm thấy bài viết.",
-                'status' => 404
-            ], 404);
+        if ($result = $this->checkPostExist($query->first())) {
+            return response()->json($result, 404);
+        }
+
+        if ($result = $this->checkStatusPost($query->first())) {
+            return response()->json($result, 404);
         }
         try {
             DB::transaction(function () use ($user, $query) {
@@ -249,11 +238,13 @@ class PostController extends Controller
     public function countView(Request $request, string $slug): JsonResponse
     {
         $post = Post::findBySlug($slug)->first();
-        if (!$post) {
-            return response()->json([
-                'errorMessage' => "Không tìm thấy bài viết.",
-                'status' => 404
-            ], 404);
+
+        if ($result = $this->checkPostExist($post)) {
+            return response()->json($result, 404);
+        }
+
+        if ($result = $this->checkStatusPost($post)) {
+            return response()->json($result, 404);
         }
         try {
             Post::findBySlug($slug)->update([
@@ -272,109 +263,18 @@ class PostController extends Controller
         }
     }
 
-    public function addToSeries(Request $request, string $slugPost, string $slugSeries): JsonResponse
-    {
-        $user = $request->user();
-
-        $post = Post::findBySlug($slugPost)->first();
-        $seriesQuery =  Series::findBySlug($slugSeries);
-
-        if (!$post) {
-            return response()->json([
-                'errorMessage' => "Không tìm thấy bài viết.",
-                'status' => 404
-            ], 404);
-        }
-
-        if (!$seriesQuery->first()) {
-            return response()->json([
-                'errorMessage' => "Không tìm thấy series.",
-                'status' => 404
-            ], 404);
-        }
-
-        if (
-            $user->getKey() !== $post->author_id
-            || $user->getKey() !== $seriesQuery->first()->author_id
-        ) {
-            return response()->json([
-                'message' => "Không có quyền thực hiện chức năng này.",
-                'status' => 200
-            ], 200);
-        }
-
-        try {
-            $seriesQuery->posts()->attach($post->getKey());
-
-            return response()->json([
-                'message' => "Thêm bài viết vào series thành công.",
-                'status' => 200,
-            ], 200);
-        } catch (Exception $exception) {
-            return response()->json([
-                'errorMessage' => $exception->getMessage(),
-                'status' => 500,
-            ], 500);
-        }
-    }
-
-    public function removeToSeries(Request $request, string $slugPost, string $slugSeries): JsonResponse
-    {
-        $user = $request->user();
-
-        $post = Post::findBySlug($slugPost)->first();
-        $seriesQuery = Series::findBySlug($slugSeries);
-
-        if (!$post) {
-            return response()->json([
-                'errorMessage' => "Không tìm thấy bài viết.",
-                'status' => 404
-            ], 404);
-        }
-
-        if (!$seriesQuery->first()) {
-            return response()->json([
-                'errorMessage' => "Không tìm thấy series.",
-                'status' => 404
-            ], 404);
-        }
-
-        if (
-            $user->getKey() !== $post->author_id
-            || $user->getKey() !== $seriesQuery->first()->author_id
-        ) {
-            return response()->json([
-                'message' => "Không có quyền thực hiện chức năng này.",
-                'status' => 200
-            ], 200);
-        }
-
-        try {
-            $seriesQuery->posts()->detach($post->getKey());
-
-            return response()->json([
-                'message' => "Loại bỏ bài viết khỏi series thành công.",
-                'status' => 200,
-            ], 200);
-        } catch (Exception $exception) {
-            return response()->json([
-                'errorMessage' => $exception->getMessage(),
-                'status' => 500,
-            ], 500);
-        }
-    }
-
     public function savePost(Request $request, string $slug): JsonResponse
     {
         $user = $request->user();
 
         $post = Post::findBySlug($slug)->first();
 
-        if (!$post) {
-            return response()->json([
-                'errorMessage' => "Không tìm thấy bài viết.",
-                'status' => 404
-            ], 404);
+        if ($result = $this->checkPostExist($post)) {
+            return response()->json($result, 404);
+        }
+
+        if ($result = $this->checkStatusPost($post)) {
+            return response()->json($result, 404);
         }
         try {
             $user->postSaved()->attach($post->getKey());
@@ -397,11 +297,12 @@ class PostController extends Controller
 
         $post = Post::findBySlug($slug)->first();
 
-        if (!$post) {
-            return response()->json([
-                'errorMessage' => "Không tìm thấy bài viết.",
-                'status' => 404
-            ], 404);
+        if ($result = $this->checkPostExist($post)) {
+            return response()->json($result, 404);
+        }
+
+        if ($result = $this->checkStatusPost($post)) {
+            return response()->json($result, 404);
         }
         try {
             $user->postSaved()->detach($post->getKey());
@@ -416,5 +317,66 @@ class PostController extends Controller
                 'status' => 500,
             ], 500);
         }
+    }
+
+    public function destroy(Request $request, string $slug): JsonResponse
+    {
+        $user = $request->user();
+
+        $postQuery = Post::findBySlug($slug);
+
+        if ($result = $this->checkPostExist($postQuery->first())) {
+            return response()->json($result, 404);
+        }
+
+        try {
+            $postQuery->delete();
+
+            return response()->json([
+                'message' => "Xóa bài viết thành công.",
+                'status' => 200,
+            ], 200);
+        } catch (Exception $exception) {
+            return response()->json([
+                'errorMessage' => $exception->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
+
+    private function checkPostExist(Post $post): array|null
+    {
+        if (!$post) {
+            return [
+                'errorMessage' => "Không tìm thấy bài viết.",
+                'status' => 404
+            ];
+        }
+
+        return null;
+    }
+
+    private function checkOwnPost(User $user, Post $post): array|null
+    {
+        if ($user->getKey() !== $post->author_id) {
+            return [
+                'message' => "Không có quyền thực hiện chức năng này.",
+                'status' => 200
+            ];
+        }
+
+        return null;
+    }
+
+    private function checkStatusPost(Post $post): array|null
+    {
+        if (!$post->is_shown) {
+            return [
+                'message' => "Bài viết đã bị ẩn.",
+                'status' => 200
+            ];
+        }
+
+        return null;
     }
 }
