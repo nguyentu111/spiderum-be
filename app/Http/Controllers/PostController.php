@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreatePostRequest;
 use App\Http\Requests\PaginationRequest;
 use App\Models\Post;
-use App\Models\Series;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\JsonResponse;

@@ -137,7 +137,7 @@ class SeriesController extends Controller
         }
     }
 
-    public function addToSeries(Request $request, string $slugPost, string $slugSeries): JsonResponse
+    public function addPostToSeries(Request $request, string $slugPost, string $slugSeries): JsonResponse
     {
         $user = $request->user();
 
@@ -180,7 +180,7 @@ class SeriesController extends Controller
         }
     }
 
-    public function removeToSeries(Request $request, string $slugPost, string $slugSeries): JsonResponse
+    public function removePostInSeries(Request $request, string $slugPost, string $slugSeries): JsonResponse
     {
         $user = $request->user();
 
