@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreatePostRequest;
 use App\Http\Requests\PaginationRequest;
 use App\Models\Post;
+use App\Models\Series;
 use Exception;
-use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class PostController extends Controller
@@ -187,7 +188,15 @@ class PostController extends Controller
             ], 404);
         }
         try {
-            $query->likes()->attach($user->getKey());
+            DB::transaction(function () use ($user, $query) {
+                $query->likes()->attach($user->getKey());
+
+                $post = $query->first();
+
+                $query->update([
+                    'like' => $post->like + 1
+                ]);
+            });
 
             return response()->json([
                 'message' => "Thích bài viết thành công.",
@@ -200,5 +209,97 @@ class PostController extends Controller
                 'status' => 500,
             ], 500);
         }
+    }
+
+    public function unlikePost(Request $request, string $slug): JsonResponse
+    {
+        $user = $request->user();
+
+        $query = Post::findBySlug($slug);
+
+        if (!$query->first()) {
+            return response()->json([
+                'errorMessage' => "Không tìm thấy bài viết.",
+                'status' => 404
+            ], 404);
+        }
+        try {
+            DB::transaction(function () use ($user, $query) {
+                $query->likes()->detech($user->getKey());
+
+                $post = $query->first();
+
+                $query->update([
+                    'like' => $post->like - 1
+                ]);
+            });
+
+            return response()->json([
+                'message' => "Bỏ thích bài viết thành công.",
+                'status' => 200,
+            ], 200);
+        } catch (Exception $exception) {
+            return response()->json([
+                'errorMessage' => $exception->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
+
+    public function countView(Request $request, string $slug): JsonResponse
+    {
+        $post = Post::findBySlug($slug)->first();
+        if (!$post) {
+            return response()->json([
+                'errorMessage' => "Không tìm thấy bài viết.",
+                'status' => 404
+            ], 404);
+        }
+        try {
+            Post::findBySlug($slug)->update([
+                'view' => $post->view + 1
+            ]);
+
+            return response()->json([
+                'message' => "Xem bài viết thành công.",
+                'status' => 200,
+            ], 200);
+        } catch (Exception $exception) {
+            return response()->json([
+                'errorMessage' => $exception->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
+
+    public function addToSeries(Request $request, string $slugPost, string $slugSeries): JsonResponse
+    {
+        $user = $request->user();
+
+        $post = Post::findBySlug($slugPost)->first();
+        $series =  Series::findBySlug($slugSeries)->first();
+
+        if (!$post) {
+            return response()->json([
+                'errorMessage' => "Không tìm thấy bài viết.",
+                'status' => 404
+            ], 404);
+        }
+
+        if (!$series) {
+            return response()->json([
+                'errorMessage' => "Không tìm thấy series.",
+                'status' => 404
+            ], 404);
+        }
+
+        if ($user->getKey() !== $post->author_id || $user->getKey() !== $series->author_id) {
+            return response()->json([
+                'message' => "Không có quyền thực hiện chức năng này.",
+                'status' => 200
+            ], 200);
+        }
+        //check
+
     }
 }
