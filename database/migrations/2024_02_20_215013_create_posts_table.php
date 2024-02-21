@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name', 255);
             $table->string('slug', 255)->unique();
             $table->string('thumbnail', 1000)->nullabel();
-            $table->text('content');
+            $table->json('content');
             $table->unsignedBigInteger('like')->default(0);
             $table->unsignedBigInteger('view')->default(0);
             $table->boolean('is_shown')->default(true);

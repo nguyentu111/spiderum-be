@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Uuidable;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -35,5 +36,10 @@ class Post extends Model
     public function likes(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_like_posts', 'post_id', 'user_id');
+    }
+
+    public function scopeFindBySlug(Builder $query, string $slug)
+    {
+        $query->where('slug', $slug);
     }
 }
