@@ -277,7 +277,7 @@ class PostController extends Controller
         $user = $request->user();
 
         $post = Post::findBySlug($slugPost)->first();
-        $series =  Series::findBySlug($slugSeries)->first();
+        $seriesQuery =  Series::findBySlug($slugSeries);
 
         if (!$post) {
             return response()->json([
@@ -286,20 +286,135 @@ class PostController extends Controller
             ], 404);
         }
 
-        if (!$series) {
+        if (!$seriesQuery->first()) {
             return response()->json([
                 'errorMessage' => "Không tìm thấy series.",
                 'status' => 404
             ], 404);
         }
 
-        if ($user->getKey() !== $post->author_id || $user->getKey() !== $series->author_id) {
+        if (
+            $user->getKey() !== $post->author_id
+            || $user->getKey() !== $seriesQuery->first()->author_id
+        ) {
             return response()->json([
                 'message' => "Không có quyền thực hiện chức năng này.",
                 'status' => 200
             ], 200);
         }
-        //check
 
+        try {
+            $seriesQuery->posts()->attach($post->getKey());
+
+            return response()->json([
+                'message' => "Thêm bài viết vào series thành công.",
+                'status' => 200,
+            ], 200);
+        } catch (Exception $exception) {
+            return response()->json([
+                'errorMessage' => $exception->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
+
+    public function removeToSeries(Request $request, string $slugPost, string $slugSeries): JsonResponse
+    {
+        $user = $request->user();
+
+        $post = Post::findBySlug($slugPost)->first();
+        $seriesQuery = Series::findBySlug($slugSeries);
+
+        if (!$post) {
+            return response()->json([
+                'errorMessage' => "Không tìm thấy bài viết.",
+                'status' => 404
+            ], 404);
+        }
+
+        if (!$seriesQuery->first()) {
+            return response()->json([
+                'errorMessage' => "Không tìm thấy series.",
+                'status' => 404
+            ], 404);
+        }
+
+        if (
+            $user->getKey() !== $post->author_id
+            || $user->getKey() !== $seriesQuery->first()->author_id
+        ) {
+            return response()->json([
+                'message' => "Không có quyền thực hiện chức năng này.",
+                'status' => 200
+            ], 200);
+        }
+
+        try {
+            $seriesQuery->posts()->detach($post->getKey());
+
+            return response()->json([
+                'message' => "Loại bỏ bài viết khỏi series thành công.",
+                'status' => 200,
+            ], 200);
+        } catch (Exception $exception) {
+            return response()->json([
+                'errorMessage' => $exception->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
+
+    public function savePost(Request $request, string $slug): JsonResponse
+    {
+        $user = $request->user();
+
+        $post = Post::findBySlug($slug)->first();
+
+        if (!$post) {
+            return response()->json([
+                'errorMessage' => "Không tìm thấy bài viết.",
+                'status' => 404
+            ], 404);
+        }
+        try {
+            $user->postSaved()->attach($post->getKey());
+
+            return response()->json([
+                'message' => "Đánh dấu bài viết thành công.",
+                'status' => 200,
+            ], 200);
+        } catch (Exception $exception) {
+            return response()->json([
+                'errorMessage' => $exception->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
+
+    public function unsavePost(Request $request, string $slug): JsonResponse
+    {
+        $user = $request->user();
+
+        $post = Post::findBySlug($slug)->first();
+
+        if (!$post) {
+            return response()->json([
+                'errorMessage' => "Không tìm thấy bài viết.",
+                'status' => 404
+            ], 404);
+        }
+        try {
+            $user->postSaved()->detach($post->getKey());
+
+            return response()->json([
+                'message' => "Bỏ đánh dấu bài viết thành công.",
+                'status' => 200,
+            ], 200);
+        } catch (Exception $exception) {
+            return response()->json([
+                'errorMessage' => $exception->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
     }
 }
