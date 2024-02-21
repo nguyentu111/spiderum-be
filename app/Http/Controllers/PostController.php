@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreatePostRequest;
 use App\Http\Requests\PaginationRequest;
 use App\Models\Post;
+use Exception;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
@@ -53,5 +57,148 @@ class PostController extends Controller
                 'isLiked' => $isLiked,
             ]
         ], 200);
+    }
+
+    public function store(CreatePostRequest $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $slug = Str::slug($request->name, '-');
+
+        $existecPost = Post::findBySlug($slug)->first();
+
+        if ($existecPost) {
+            return response()->json([
+                'errorMessage' => "Tên bài viết trùng đã được sử dụng.",
+                'status' => 200
+            ], 200);
+        }
+
+        try {
+            $post = Post::create([
+                'name' => $request->name,
+                'slug' => $slug,
+                'content' => $request->json('content'),
+                'author_id' => $user->getKey(),
+                'is_shown' => $request->get('is_shown')
+            ]);
+
+            return response()->json([
+                'message' => "Lưu bài viết thành công.",
+                'status' => 200,
+                'data' => $post
+            ], 200);
+        }
+        catch (Exception $exception) {
+            return response()->json([
+                'errorMessage' => $exception->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
+
+    public function showPost(Request $request, string $slug): JsonResponse
+    {
+        $user = $request->user();
+
+        $post = Post::findBySlug($slug)->first();
+
+        if (!$post) {
+            return response()->json([
+                'errorMessage' => "Không tìm thấy bài viết.",
+                'status' => 404
+            ], 404);
+        }
+
+        if ($user->getKey() !== $post->author_id) {
+            return response()->json([
+                'message' => "Không có quyền thực hiện chức năng này.",
+                'status' => 200
+            ], 200);
+        }
+
+        try {
+            $post->update([
+                'is_shown' => true
+            ]);
+
+            return response()->json([
+                'message' => "Công khai bài viết thành công.",
+                'status' => 200,
+                'data' => $post
+            ], 200);
+        }
+        catch (Exception $exception) {
+            return response()->json([
+                'errorMessage' => $exception->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
+
+    public function hidePost(Request $request, string $slug): JsonResponse
+    {
+        $user = $request->user();
+
+        $post = Post::findBySlug($slug)->first();
+
+        if (!$post) {
+            return response()->json([
+                'errorMessage' => "Không tìm thấy bài viết.",
+                'status' => 404
+            ], 404);
+        }
+
+        if ($user->getKey() !== $post->author_id) {
+            return response()->json([
+                'message' => "Không có quyền thực hiện chức năng này.",
+                'status' => 200
+            ], 200);
+        }
+
+        try {
+            $post->update([
+                'is_shown' => false
+            ]);
+
+            return response()->json([
+                'message' => "Ẩn bài viết thành công.",
+                'status' => 200,
+                'data' => $post
+            ], 200);
+        } catch (Exception $exception) {
+            return response()->json([
+                'errorMessage' => $exception->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
+
+    public function likePost(Request $request, string $slug): JsonResponse
+    {
+        $user = $request->user();
+
+        $query = Post::findBySlug($slug);
+
+        if (!$query->first()) {
+            return response()->json([
+                'errorMessage' => "Không tìm thấy bài viết.",
+                'status' => 404
+            ], 404);
+        }
+        try {
+            $query->likes()->attach($user->getKey());
+
+            return response()->json([
+                'message' => "Thích bài viết thành công.",
+                'status' => 200,
+            ], 200);
+        }
+        catch (Exception $exception) {
+            return response()->json([
+                'errorMessage' => $exception->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
     }
 }
