@@ -35,6 +35,11 @@ class Series extends Model
         return $this->belongsToMany(User::class, 'user_save_series', 'series_id', 'user_id');
     }
 
+    public function posts(): BelongsToMany
+    {
+        return $this->belongsToMany(Series::class, 'series_posts', 'post_id', 'series_id');
+    }
+
     public function scopeFindBySlug(Builder $query, string $slug)
     {
         $query->where('slug', $slug);

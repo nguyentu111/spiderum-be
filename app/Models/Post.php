@@ -38,6 +38,11 @@ class Post extends Model
         return $this->belongsToMany(User::class, 'user_like_posts', 'post_id', 'user_id');
     }
 
+    public function series(): BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, 'series_posts', 'series_id', 'post_id');
+    }
+
     public function scopeFindBySlug(Builder $query, string $slug)
     {
         $query->where('slug', $slug);
