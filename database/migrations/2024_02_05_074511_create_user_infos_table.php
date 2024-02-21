@@ -14,6 +14,8 @@ return new class extends Migration {
             $table->uuid('id')->primary();
             $table->string('description', 1000)->nullable();
             $table->string('phone_number', 15)->nullable();
+            $table->string('address', 255)->nullable();
+            $table->string('hometown', 255)->nullable();
             $table->string('email')->unique();
             $table->datetime('dob')->nullable();
             $table->string('id_number', 20)->nullable();

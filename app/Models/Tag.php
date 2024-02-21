@@ -5,10 +5,10 @@ namespace App\Models;
 use App\Traits\Uuidable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Category extends Model
+class Tag extends Model
 {
     use HasFactory, Uuidable;
 
@@ -16,18 +16,13 @@ class Category extends Model
 
     public $incrementing = false;
 
-    protected $fillable = [
-        'name',
-        'slug'
-    ];
-
-    public function tags(): HasMany
+    public function category(): BelongsTo
     {
-        return $this->hasMany(Tag::class);
+        return $this->belongsTo(Category::class);
     }
 
     public function posts(): BelongsToMany
     {
-        return $this->belongsToMany(Post::class, 'post_categories', 'post_id', 'category_id');
+        return $this->belongsToMany(Post::class, 'post_tags', 'post_id', 'tag_id');
     }
 }
