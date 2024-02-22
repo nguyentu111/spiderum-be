@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Traits\Uuidable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -43,7 +43,7 @@ class Comment extends Model
                 $parent = $this->parent;
 
                 while ($parent->getKey()) {
-                    $parent->push($parent);
+                    $parents->push($parent);
                     $parent = $parent->parent;
                 }
 
