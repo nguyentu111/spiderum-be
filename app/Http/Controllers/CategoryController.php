@@ -13,7 +13,7 @@ class CategoryController extends Controller
 {
     public function index(): JsonResponse
     {
-        $categories = Category::get();
+        $categories = Category::with('tags')->get();
 
         return response()->json([
             'message' => 'Lấy thông tin thể loại thành công.',
