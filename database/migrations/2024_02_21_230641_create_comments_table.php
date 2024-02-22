@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('content', 1000);
             $table->uuid('parent_id')->nullable();
+            $table->bigInteger('like')->default(0);
             $table->foreign('parent_id')->references('id')->on('comments');
             $table->foreignUuid('post_id')->references('id')->on('posts');
             $table->foreignUuid('user_id')->references('id')->on('users');

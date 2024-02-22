@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('slug', 255)->unique();
             $table->string('thumbnail', 1000)->nullable();
             $table->json('content');
-            $table->unsignedBigInteger('like')->default(0);
+            $table->bigInteger('like')->default(0);
             $table->unsignedBigInteger('view')->default(0);
             $table->boolean('is_shown')->default(true);
             $table->foreignUuid('author_id')->references('id')->on('users');

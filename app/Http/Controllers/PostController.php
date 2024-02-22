@@ -8,6 +8,7 @@ use App\Models\Post;
 use App\Models\User;
 use App\Supports\ArrayToTree;
 use Exception;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +48,7 @@ class PostController extends Controller
             return response()->json($result, 200);
         }
 
-        $isLiked = in_array($user->getKey(), $post->likes->pluck('user_id'));
+        $isLiked = in_array($user->getKey(), $post->likePosts->pluck('user_id'));
 
         $comments = new ArrayToTree($post->comments->toArray());
 
@@ -182,13 +183,19 @@ class PostController extends Controller
         }
         try {
             DB::transaction(function () use ($user, $query) {
-                $query->likes()->attach($user->getKey());
+                $query->likePosts()->attach($user->getKey());
 
-                $post = $query->first();
+                $isDisliked = $query->whereHas('dislikePosts', function (Builder $query) use ($user) {
+                    $query->where('user_id', $user->getKey());
+                })->first();
 
-                $query->update([
-                    'like' => $post->like + 1
-                ]);
+                if (!$isDisliked) {
+                    $post = $query->first();
+
+                    $query->update([
+                        'like' => $post->like + 1
+                    ]);
+                }
             });
 
             return response()->json([
@@ -217,15 +224,119 @@ class PostController extends Controller
         if ($result = $this->checkStatusPost($query->first())) {
             return response()->json($result, 404);
         }
+
+        $isDisliked = $query->whereHas('dislikePosts', function (Builder $query) use ($user) {
+            $query->where('user_id', $user->getKey());
+        })->first();
+
+        if ($isDisliked) {
+            return response()->json([
+                'message' => 'Hành động bị từ chối, bạn chưa thích bài viết này.',
+                'status' => 200,
+            ], 200);
+        }
+        try {
+            DB::transaction(function () use ($user, $query, $isDisliked) {
+                $query->likePosts()->detech($user->getKey());
+
+                if (!$isDisliked) {
+                    $post = $query->first();
+
+                    $query->update([
+                        'like' => $post->like - 1
+                    ]);
+                }
+            });
+
+            return response()->json([
+                'message' => "Bỏ thích bài viết thành công.",
+                'status' => 200,
+            ], 200);
+        } catch (Exception $exception) {
+            return response()->json([
+                'errorMessage' => $exception->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
+
+    public function dislikePost(Request $request, string $slug): JsonResponse
+    {
+        $user = $request->user();
+
+        $query = Post::findBySlug($slug);
+
+        if ($result = $this->checkPostExist($query->first())) {
+            return response()->json($result, 404);
+        }
+
+        if ($result = $this->checkStatusPost($query->first())) {
+            return response()->json($result, 404);
+        }
         try {
             DB::transaction(function () use ($user, $query) {
-                $query->likes()->detech($user->getKey());
+                $query->likePosts()->attach($user->getKey());
+
+                $isLiked = $query->whereHas('likePosts', function (Builder $query) use ($user) {
+                    $query->where('user_id', $user->getKey());
+                })->first();
+
+                if (!$isLiked) {
+                    $post = $query->first();
+
+                    $query->update([
+                        'like' => $post->like + 1
+                    ]);
+                }
+            });
+
+            return response()->json([
+                'message' => "Thích bài viết thành công.",
+                'status' => 200,
+            ], 200);
+        } catch (Exception $exception) {
+            return response()->json([
+                'errorMessage' => $exception->getMessage(),
+                'status' => 500,
+            ], 500);
+        }
+    }
+
+    public function undislikePost(Request $request, string $slug): JsonResponse
+    {
+        $user = $request->user();
+
+        $query = Post::findBySlug($slug);
+
+        if ($result = $this->checkPostExist($query->first())) {
+            return response()->json($result, 404);
+        }
+
+        if ($result = $this->checkStatusPost($query->first())) {
+            return response()->json($result, 404);
+        }
+
+        $isLiked = $query->whereHas('likePosts', function (Builder $query) use ($user) {
+            $query->where('user_id', $user->getKey());
+        })->first();
+
+        if ($isLiked) {
+            return response()->json([
+                'message' => 'Hành động bị từ chối, bạn chưa dislike bài viết này.',
+                'status' => 200,
+            ], 200);
+        }
+        try {
+            DB::transaction(function () use ($user, $query, $isLiked) {
+                $query->likePosts()->detech($user->getKey());
 
                 $post = $query->first();
 
-                $query->update([
-                    'like' => $post->like - 1
-                ]);
+                if (!$isLiked) {
+                    $query->update([
+                        'like' => $post->like - 1
+                    ]);
+                }
             });
 
             return response()->json([

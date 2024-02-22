@@ -66,9 +66,14 @@ class User extends Authenticatable
         return $this->hasMany(UserFollower::class, 'source_id', 'id');
     }
 
-    public function likes(): BelongsToMany
+    public function likePosts(): BelongsToMany
     {
         return $this->belongsToMany(Post::class, 'user_like_posts', 'user_id', 'post_id');
+    }
+
+    public function dislikePosts(): BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, 'user_dislike_posts', 'user_id', 'post_id');
     }
 
     public function series(): HasMany
@@ -89,5 +94,15 @@ class User extends Authenticatable
     public function seriesSaved(): BelongsToMany
     {
         return $this->belongsToMany(Series::class, 'user_save_series', 'user_id', 'series_id');
+    }
+
+    public function likeComments(): BelongsToMany
+    {
+        return $this->belongsToMany(Comment::class, 'user_like_comments', 'comment_id', 'user_id');
+    }
+
+    public function dislikeComments(): BelongsToMany
+    {
+        return $this->belongsToMany(Comment::class, 'user_dislike_comments', 'comment_id', 'user_id');
     }
 }
