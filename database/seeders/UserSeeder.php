@@ -11,6 +11,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $user = User::create([
+            'id' => '627f3002-ab34-4e01-a51b-10dda3cefcf4',
             'username' => 'nghi1421',
             'password' => bcrypt(env('PASSWORD_DEFAULT')),
             'alias' => 'Hubert Nguyen',
@@ -24,6 +25,7 @@ class UserSeeder extends Seeder
         ]);
 
         $user = User::create([
+            'id' => 'cc937bdd-0bcb-4583-bd69-31b4d3bdf413',
             'username' => 'thanhnghi1421',
             'password' => bcrypt(env('PASSWORD_DEFAULT')),
             'alias' => 'Thanh Nghi',
@@ -37,6 +39,7 @@ class UserSeeder extends Seeder
         ]);
 
         $user = User::create([
+            'id' => '2c617ce9-1bad-4a7f-b240-1fdd89e1aeb3',
             'username' => 'tunguyen123',
             'password' => bcrypt(env('PASSWORD_DEFAULT')),
             'alias' => 'Anh Tu',
@@ -49,6 +52,7 @@ class UserSeeder extends Seeder
         ]);
 
         $user = User::create([
+            'id' => 'fcf9279d-6495-4495-a6de-8e336ed025c2',
             'username' => 'anhkiet123',
             'password' => bcrypt(env('PASSWORD_DEFAULT')),
             'alias' => 'Kiet Phan',
