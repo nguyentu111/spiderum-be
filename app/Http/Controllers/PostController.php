@@ -6,6 +6,7 @@ use App\Http\Requests\CreatePostRequest;
 use App\Http\Requests\PaginationRequest;
 use App\Models\Post;
 use App\Models\User;
+use App\Supports\ArrayToTree;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -48,11 +49,16 @@ class PostController extends Controller
 
         $isLiked = in_array($user->getKey(), $post->likes->pluck('user_id'));
 
+        $comments = new ArrayToTree($post->comments->toArray());
+
         return response()->json([
             'message' => "Lấy bài viết thành công.",
             'status' => 200,
             'data' => [
-                'post' => $post,
+                'post' => [
+                    ...$post,
+                    'comments' => $comments->buildTree(),
+                ],
                 'isLiked' => $isLiked,
             ]
         ], 200);
