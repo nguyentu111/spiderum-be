@@ -3,6 +3,7 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SeriesController;
+use App\Http\Controllers\TagController;
 use App\Http\Controllers\UploadImageController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserFollowerController;
@@ -27,6 +28,13 @@ Route::middleware(['cookie.token', 'auth:sanctum'])->group(function () {
         Route::post('/', [CategoryController::class, 'store']);
         Route::post('/{slug}', [CategoryController::class, 'update']);
         Route::delete('/{slug}', [CategoryController::class, 'destroy']);
+    });
+
+    Route::prefix('/tags')->group(function () {
+        Route::get('/', [TagController::class, 'index']);
+        Route::post('/', [TagController::class, 'store']);
+        Route::post('/{slug}', [TagController::class, 'update']);
+        Route::delete('/{slug}', [TagController::class, 'destroy']);
     });
 
     Route::prefix('/series')->group(function () {
