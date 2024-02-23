@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\Uuidable;
 use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,7 @@ class Post extends Model
         'content',
         'like',
         'view',
+        'comment',
         'is_shown',
         'author_id',
     ];
@@ -37,6 +39,37 @@ class Post extends Model
     public function likes(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_like_posts', 'post_id', 'user_id');
+    }
+
+    public function dislikes(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_dislike_posts', 'post_id', 'user_id');
+    }
+
+    public function likedUserIds(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $likes = $this->likes;
+
+                return $likes->map(function ($likedUser) {
+                    return $likedUser->getKey();
+                });
+            }
+        );
+    }
+
+    public function dislikedUserIds(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $dislikes = $this->dislikes;
+
+                return $dislikes->map(function ($dislikedUser) {
+                    return $dislikedUser->getKey();
+                });
+            }
+        );
     }
 
     public function series(): BelongsToMany

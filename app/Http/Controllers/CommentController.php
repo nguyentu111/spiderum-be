@@ -26,13 +26,21 @@ class CommentController extends Controller
             ], 404);
         }
         try {
-            $comment = Comment::create([
-                'content' => $request->content,
-                'post_id' => $post->getKey(),
-                'user_id' => $user->getKey(),
-                'parent_id' => $request->get('parent_id') ?? null,
-                'like' => 0,
-            ]);
+            $comment = DB::transaction(function () use ($request, $user, $post) {
+                $comment = Comment::create([
+                    'content' => $request->content,
+                    'post_id' => $post->getKey(),
+                    'user_id' => $user->getKey(),
+                    'parent_id' => $request->get('parent_id') ?? null,
+                    'like' => 0,
+                ]);
+
+                $post->update([
+                    'comment' => $post->comment + 1
+                ]);
+
+                return $comment;
+            });
 
             return response()->json([
                 'message' => 'Bình luận thành công.',
