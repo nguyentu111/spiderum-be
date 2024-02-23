@@ -12,10 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_followers', function (Blueprint $table) {
-            $table->uuid('id')->primary();
             $table->foreignUuid('source_id')->references('id')->on('users');
             $table->foreignUuid('target_id')->references('id')->on('users');
-            $table->timestamps();
+            $table->primary(['source_id', 'target_id']);
         });
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -56,14 +57,40 @@ class User extends Authenticatable
         return $this->hasOne(UserInfo::class);
     }
 
-    public function followers(): HasMany
+    public function followers(): BelongsToMany
     {
-        return $this->hasMany(UserFollower::class, 'target_id', 'id');
+        return $this->belongsToMany(User::class, 'user_followers','target_id', 'source_id');
     }
 
-    public function followings(): HasMany
+    public function followerIds(): Attribute
     {
-        return $this->hasMany(UserFollower::class, 'source_id', 'id');
+        return Attribute::make(
+            get: function () {
+                $followers = $this->followers;
+
+                return $followers->map(function ($follower) {
+                    return $follower->getKey();
+                });
+            }
+        );
+    }
+
+    public function followingIds(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $followings = $this->followings;
+
+                return $followings->map(function ($follower) {
+                    return $follower->getKey();
+                });
+            }
+        );
+    }
+
+    public function followings(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class,'user_followers', 'source_id', 'target_id');
     }
 
     public function likePosts(): BelongsToMany

@@ -24,7 +24,7 @@ class UserSeeder extends Seeder
             'user_id' => $user->getKey()
         ]);
 
-        $user = User::create([
+        $user1 = User::create([
             'id' => 'cc937bdd-0bcb-4583-bd69-31b4d3bdf413',
             'username' => 'thanhnghi1421',
             'password' => bcrypt(env('PASSWORD_DEFAULT')),
@@ -37,6 +37,8 @@ class UserSeeder extends Seeder
             'id_number' => '05127846147541',
             'user_id' => $user->getKey()
         ]);
+
+        $user1->followers()->attach('627f3002-ab34-4e01-a51b-10dda3cefcf4');
 
         $user = User::create([
             'id' => '2c617ce9-1bad-4a7f-b240-1fdd89e1aeb3',
@@ -51,6 +53,8 @@ class UserSeeder extends Seeder
             'user_id' => $user->getKey()
         ]);
 
+        $user1->followers()->attach('2c617ce9-1bad-4a7f-b240-1fdd89e1aeb3');
+
         $user = User::create([
             'id' => 'fcf9279d-6495-4495-a6de-8e336ed025c2',
             'username' => 'anhkiet123',
@@ -63,5 +67,7 @@ class UserSeeder extends Seeder
             'phone_number' => '0987777888',
             'user_id' => $user->getKey()
         ]);
+
+        $user1->followers()->attach('fcf9279d-6495-4495-a6de-8e336ed025c2');
     }
 }
