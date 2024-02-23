@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\UserFollower;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -11,7 +10,7 @@ class UserFollowerController extends Controller
 {
     public function getFollowers(Request $request): JsonResponse {
         $user = $request->user();
-        $follwerIds = $user->followers->pluck('source_id');
+        $follwerIds = $user->followerIds;
         $followers = User::query()->select(['id', 'alias'])->whereIn('id', $follwerIds)->get();
 
         return response()->json([
@@ -24,7 +23,7 @@ class UserFollowerController extends Controller
     public function getFollowings(Request $request): JsonResponse
     {
         $user = $request->user();
-        $follwerIds = $user->followings->pluck('target_id');
+        $follwerIds = $user->followingIds;
         $followers = User::query()->select(['id', 'alias'])->whereIn('id', $follwerIds)->get();
 
         return response()->json([
@@ -51,10 +50,7 @@ class UserFollowerController extends Controller
             ]);
         }
 
-        UserFollower::create([
-            'source_id' => $user->getKey(),
-            'target_id' => $target->getKey()
-        ]);
+        $user->followers()->attach($target->getKey());
 
         return response()->json([
             'status' => 200,
@@ -79,7 +75,7 @@ class UserFollowerController extends Controller
             ], 404);
         }
 
-        $result = UserFollower::findUserFollower($user->getKey(), $target->getKey())->delete();
+        $result = $user->followers()->detach($target->getKey());
 
         if ($result) {
             return response()->json([

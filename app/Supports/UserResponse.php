@@ -23,6 +23,8 @@ class UserResponse {
             'dob' => $this->userInfo->dob,
             'description' => $this->userInfo->description,
             'id_number' => $this->userInfo->id_number,
+            'followers' => count($this->user->followerIds),
+            'followings' => count($this->user->followingIds),
         ];
     }
 }

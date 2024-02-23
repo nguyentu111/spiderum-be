@@ -9,6 +9,7 @@ use App\Models\UserInfo;
 use App\Supports\UserResponse;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Crypt;
@@ -98,11 +99,6 @@ class UserController extends Controller
         ]);
     }
 
-    public function edit(string $id)
-    {
-        //
-    }
-
     public function update(UpdateUser $request)
     {
         $user = $request->user();
@@ -148,10 +144,5 @@ class UserController extends Controller
                 'errorMessage' => $exception->getMessage()
             ], 500);
         }
-    }
-
-    public function destroy(string $id)
-    {
-
     }
 }
