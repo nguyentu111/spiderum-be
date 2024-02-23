@@ -34,7 +34,8 @@ class PostController extends Controller
     {
         $user = $request->user();
 
-        $post = Post::findBySlug($slug)->first();
+        $postQuery = Post::findBySlug($slug);
+        $post = $postQuery->first();
 
         if ($result = $this->checkPostExist($post)) {
             return response()->json($result, 404);
@@ -48,9 +49,15 @@ class PostController extends Controller
             return response()->json($result, 200);
         }
 
-        $isLiked = in_array($user->getKey(), $post->likePosts->pluck('user_id'));
+        $isLiked = $postQuery->whereHas('likes', function (Builder $query) use ($user) {
+            $query->where('user_id', $user->getKey());
+        })->first();
 
         $comments = new ArrayToTree($post->comments->toArray());
+
+        $isFollowed = $user->whereHas('followings', function (Builder $query) use ($post) {
+            $query->where('target_id', $post);
+        })->frist();
 
         return response()->json([
             'message' => "Lấy bài viết thành công.",
@@ -60,7 +67,8 @@ class PostController extends Controller
                     ...$post,
                     'comments' => $comments->buildTree(),
                 ],
-                'isLiked' => $isLiked,
+                'isLiked' => $isLiked ? true : false,
+                'isFollowed' => $isFollowed ? true : false
             ]
         ], 200);
     }
