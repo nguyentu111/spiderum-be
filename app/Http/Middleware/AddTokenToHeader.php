@@ -3,7 +3,9 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Cookie;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Symfony\Component\HttpFoundation\Response;
 
 class AddTokenToHeader
@@ -15,7 +17,8 @@ class AddTokenToHeader
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $token = $request->cookie('token');
+        $encryptedToken = Crypt::decrypt(Cookie::get('token'), false);
+        $token = $this->encryptedStringToToken($encryptedToken);
 
         if (!$token) {
             return response()->json([
@@ -24,8 +27,16 @@ class AddTokenToHeader
         }
 
         $request->headers->add(['Accept' => 'application/json']);
-        $request->headers->add(['Authorization' => 'Bearer ' . $token]);
+        $request->headers->add(['Authorization' => 'Bearer ' .  $token]);
 
         return $next($request);
+    }
+
+    private function encryptedStringToToken(string $encryptedString): string
+    {
+        $split = explode('|', $encryptedString);
+        unset($split[0]);
+
+        return join('|', $split);
     }
 }
