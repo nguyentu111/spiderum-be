@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SeriesController;
@@ -15,6 +16,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::middleware(['cookie.token', 'auth:sanctum'])->group(function () {
+    Route::post('/logout', [LogoutController::class, '__invoke']);
     Route::get('/profile', [UserController::class, 'show']);
     Route::get('/followers', [UserFollowerController::class, 'getFollowers']);
     Route::get('/followings', [UserFollowerController::class, 'getFollowings']);

@@ -13,17 +13,21 @@ use Illuminate\Support\Facades\Redirect;
 
 class LoginController extends Controller
 {
-    public function show() {
+    public function show()
+    {
         return view('auth.login');
     }
 
-    public function store(LoginRequest $request) {
+    public function store(LoginRequest $request)
+    {
         $user = User::where('username', $request->email)->first();
         if ($user) {
-            if (!Auth::attempt([
-                'username' => $request->email,
-                'password' => $request->password,
-            ])) {
+            if (
+                !Auth::attempt([
+                    'username' => $request->email,
+                    'password' => $request->password,
+                ])
+            ) {
                 return redirect()->back()->with([
                     'errorMessage' => 'Vui lòng kiểm tra tên đăng nhập và mật khẩu.'
                 ]);
