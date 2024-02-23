@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Enums\SortNewFeedEnum;
 use App\Http\Requests\NewfeedRequest;
 use App\Models\Post;
-use Illuminate\Http\Request;
 
 class NewfeedController extends Controller
 {
@@ -51,12 +50,26 @@ class NewfeedController extends Controller
             }
 
             case SortNewFeedEnum::Controversial: {
+                $posts = Post::query()
+                    ->orderBy('comment', 'DECS')
+                    ->paginate($perPage);
 
-                break;
+                return response()->json([
+                    'message' => 'Lấy danh sách bài viết sôi nổi thành công.',
+                    'status' => 200,
+                    'data' => $posts
+                ], 200);
             }
             case SortNewFeedEnum::Top: {
+                $posts = Post::query()
+                    ->orderBy('view', 'DECS')
+                    ->paginate($perPage);
 
-                break;
+                return response()->json([
+                    'message' => 'Lấy danh sách bài viết nổi bật thành công.',
+                    'status' => 200,
+                    'data' => $posts
+                ], 200);
             }
         }
     }
