@@ -70,7 +70,7 @@ class User extends Authenticatable
 
                 return $followers->map(function ($follower) {
                     return $follower->getKey();
-                });
+                })->toArray();
             }
         );
     }
@@ -83,7 +83,7 @@ class User extends Authenticatable
 
                 return $followings->map(function ($follower) {
                     return $follower->getKey();
-                });
+                })->toArray();
             }
         );
     }

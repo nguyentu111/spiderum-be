@@ -36,8 +36,12 @@ class NewfeedController extends Controller
 
             case SortNewFeedEnum::Follow: {
                 $user = $request->user();
-                // $uesrFollowerId =
-                $posts = Post::query()->user()->orderBy('created_at', 'DECS')->paginate($perPage);
+                $userFollowerIds = $user->followerIds;
+
+                $posts = Post::query()
+                    ->whereIn('author_id', $userFollowerIds)
+                    ->orderBy('created_at', 'DECS')
+                    ->paginate($perPage);
 
                 return response()->json([
                     'message' => 'Lấy danh sách bài viết mới thành công.',
