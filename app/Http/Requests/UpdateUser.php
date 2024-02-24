@@ -45,6 +45,11 @@ class UpdateUser extends FormRequest
                 'required',
                 'max:100',
             ],
+            'address' => [
+                'nullable',
+                'string',
+                'max:255'
+            ],
             'description' => [
                 'nullabel',
                 'max:255'

@@ -20,11 +20,6 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    public function index()
-    {
-        //
-    }
-
     public function create(Request $request)
     {
         $token = $request->query('token');
@@ -79,7 +74,7 @@ class UserController extends Controller
         }
     }
 
-    public function show(Request $request)
+    public function show(Request $request): JsonResponse
     {
         $user = $request->user();
 
@@ -124,7 +119,8 @@ class UserController extends Controller
                     'phone_number' => $request->get('phone_number'),
                     'id_number' => $request->get('id_number'),
                     'dob' => $request->get('dob'),
-                    'description' => $request->get('description')
+                    'description' => $request->get('description'),
+                    'address' => $request->address
                 ]);
 
                 return $user;
