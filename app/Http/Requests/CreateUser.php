@@ -21,7 +21,6 @@ class CreateUser extends FormRequest
     public function rules(): array
     {
         return [
-            'g-recaptcha-response' => ['required', new ReCaptchaV3('submitContact')],
             'username' => [
                 'required',
                 'max:255',
@@ -33,8 +32,6 @@ class CreateUser extends FormRequest
                 'max:255',
                 Password::min(8)
                     ->letters()
-                    ->mixedCase()
-                    ->numbers()
             ],
             'alias' => ['required', 'max:100'],
             'email' => ['required', 'email', 'unique:user_infos,email'],
@@ -48,6 +45,9 @@ class CreateUser extends FormRequest
                 'nullable',
                 'regex:/(0)[0-9]/',
                 'not_regex:/[a-z]/',
+            ],
+            'avatar_url' => [
+                'nullable'
             ]
         ];
     }

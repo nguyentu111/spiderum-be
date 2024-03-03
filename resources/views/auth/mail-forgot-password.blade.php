@@ -60,13 +60,11 @@
 
 <body>
     <div>
-        <h2>Chào mừng bạn đến với cộng đồng Blog</h2>
-        <span>Hãy nhấn vào nút bên dưới để tạo tài khoản và tham gia cùng chúng tôi (đường link
-            chỉ sử dụng được trong vòng
-            30 phút):
+        <h2>Xin chào {{$username}}</h2>
+        <span>Gần đây bạn có yêu cầu lập lại mật khẩu tài khoản của bạn trên hệ thống Spiderum, để tiếp tục quá trình này, hãy nhấn vào nút bên dưới (đường link chỉ sử dụng được trong vòng 30 phút):
         </span>
-        <a id='btn' href="{{env('FRONT_END_URL').'/create-new-account?token='.$token}}">
-            <p class='btn-text'>Đăng ký tài khoản với email</p>
+        <a id='btn' href="{{env('FRONT_END_URL').'/reset-password?token='.$token}}">
+            <p class='btn-text'>Lấy lại mật khẩu</p>
             <div class='icon'>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                     viewBox="0 0 16 16">

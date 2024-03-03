@@ -8,7 +8,9 @@ use App\Models\User;
 use App\Models\UserInfo;
 use App\Supports\UserResponse;
 use Carbon\Carbon;
+use Error;
 use Exception;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
@@ -20,25 +22,31 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    public function create(Request $request)
+   
+    public function getEmailByToken(Request $request)
     {
-        $token = $request->query('token');
-
-        $decodeToken = Crypt::decryptString($token);
-        [$email, $expiryTime] = explode('|', $decodeToken);
-
-        $expiryTime = Carbon::parse($expiryTime);
-        if ($expiryTime->lt(Carbon::now())) {
-            return view('user.create-form', [
-                'email' => $email,
-                'errorMessage' => 'Đường dẫn đã hết hạn. Vui lòng xác thực lại email.'
-            ]);
-        } else {
-            return view('user.create-form', [
-                'email' => $email,
-                'errorMessage' => ''
-            ]);
+        $token = $request->input('token');
+        try{
+            $decodeToken = Crypt::decryptString($token);
+            [$email, $expiryTime] = explode('|', $decodeToken);
+    
+            $expiryTime = Carbon::parse($expiryTime);
+            if ($expiryTime->lt(Carbon::now())) {
+                return response([
+                    'email' => $email,
+                    'message' => 'Đường dẫn đã hết hạn. Vui lòng xác thực lại email.',
+                ],400);
+            } else {
+                return response([
+                    'email' => $email,
+                ],200);
+            }
+        }catch(DecryptException $e){
+            return response([
+                'message' => 'Token invalid',
+            ],400);
         }
+        
     }
 
     public function store(CreateUser $request)
@@ -49,6 +57,7 @@ class UserController extends Controller
                     'username' => $request->get('username'),
                     'password' => $request->get('password'),
                     'alias' => $request->get('alias'),
+                    'avatar_url' => $request->get('avatar_url'),
                 ]);
                 UserInfo::create([
                     'email' => $request->get('email'),
@@ -60,17 +69,16 @@ class UserController extends Controller
                 return $user;
             });
             $token = $user->createToken('main')->plainTextToken;
-            $cookie = Cookie::make('token', $token, 864);
 
-            return Redirect::away(env('FRONT_END_URL'))->withCookie($cookie);
+            return   response()->json([
+                'tooken' =>$token,
+                'user' => $user
+            ]);
         }
         catch (Exception $exception) {
             return response()->json([
-                'errorMessage' => $exception->getMessage()
-            ]);
-            // return redirect()->back()->with([
-            //     'errorMessage' => $exception->getMessage()
-            // ]);
+                'message' => $exception->getMessage()
+            ],500);
         }
     }
 

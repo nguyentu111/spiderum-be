@@ -1,7 +1,11 @@
 <?php
 
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\Auth\SignUpController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\NewfeedController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SeriesController;
 use App\Http\Controllers\TagController;
@@ -11,11 +15,32 @@ use App\Http\Controllers\UserFollowerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+
+Route::get('/', fn()=>'hi');
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::middleware(['cookie.token', 'auth:sanctum'])->group(function () {
+
+
+Route::post('/login', [LoginController::class, 'store']);
+Route::post('/register', [SignUpController::class, 'store']);
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendmail']);
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
+Route::get('/new-feed',[NewfeedController::class,'getNewfeed']);
+Route::get('/top-view',[NewfeedController::class,'getTopView']);
+Route::get('/categories',[CategoryController::class,'index']);
+
+
+Route::prefix('auth')->group(function () {
+    Route::prefix('/users')->group(function () {
+        Route::post('get-email-by-token', [UserController::class, 'getEmailByToken']);
+        Route::post('store', [UserController::class, 'store'])->name('store-user');
+    });
+});
+
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/logout', [LogoutController::class, '__invoke']);
     Route::get('/profile', [UserController::class, 'show']);
     Route::get('/followers', [UserFollowerController::class, 'getFollowers']);
@@ -26,7 +51,6 @@ Route::middleware(['cookie.token', 'auth:sanctum'])->group(function () {
     Route::put('/update-profile', [UserController::class, 'update']);
 
     Route::prefix('/categories')->group(function () {
-        Route::get('/', [CategoryController::class, 'index']);
         Route::post('/', [CategoryController::class, 'store']);
         Route::post('/{slug}', [CategoryController::class, 'update']);
         Route::delete('/{slug}', [CategoryController::class, 'destroy']);

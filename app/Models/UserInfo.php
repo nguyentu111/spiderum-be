@@ -27,8 +27,8 @@ class UserInfo extends Model
 
     public $timestamps = true;
 
-    public function user(User $user)
+    public function user()
     {
-        return $this->belongsTo(User::class, 'id', 'user_id');
+        return $this->belongsTo(User::class);
     }
 }

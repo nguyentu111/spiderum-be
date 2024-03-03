@@ -12,10 +12,10 @@ use illuminate\Support\Str;
 
 class SeriesController extends Controller
 {
-    public function index(): JsonResponse
-    {
-        $series = Series::get();
-
+    public function index(Request $request): JsonResponse
+    {   
+        $user = $request->user();
+        $series = Series::query()->where('author_id',$user->id)->get();
         return response()->json([
             'message' => 'Lấy danh sách series thành công.',
             'status' => 200,
