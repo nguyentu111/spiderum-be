@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreatePostRequest;
+use App\Http\Requests\GetPosts;
 use App\Http\Requests\PaginationRequest;
+use App\Http\Requests\VotePost;
 use App\Models\Post;
+use App\Models\Series;
 use App\Models\User;
 use App\Supports\ArrayToTree;
 use Exception;
@@ -16,13 +19,17 @@ use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
-    public function getUserPosts(PaginationRequest $request): JsonResponse
+    public function getUserPosts(GetPosts $request): JsonResponse
     {
-        $user = $request->user();
-
-        $perPage = $request->get('per_page');
-        $posts = Post::where('author_id', $user->getKey())->paginate($perPage);
-
+        $user = User::query()->where('username', $request->input('username'))->first();
+        if(!$user) return response(['message' => 'Không tìm thấy người dùng này'],404);
+        $posts = null;
+        if($request->has('series')){
+            $series =  $user->series()->where('slug',$request->input('series'))->first();
+            if($series) $posts = $series->posts()->with(['author','categories','series','tags','comments' => fn ($query) => $query->orderBy('created_at','desc' ),'comments.user.userInfo','likes','dislikes'])->paginate();
+        
+        }
+        else $posts =  $user->posts()->with(['author','categories','series','tags','comments' => fn ($query) => $query->orderBy('created_at','desc' ),'comments.user.userInfo','likes','dislikes'])->paginate();
         return response()->json([
             'message' => 'Lấy danh sách bài viết thành công.',
             'status' => 200,
@@ -32,80 +39,103 @@ class PostController extends Controller
 
     public function getPost(Request $request, string $slug): JsonResponse
     {
-        $user = $request->user();
-
-        $postQuery = Post::findBySlug($slug);
+        $postQuery = Post::where('slug',$slug)->with(['author','categories','series','tags','comments' => fn ($query) => $query->orderBy('created_at','desc' ),'comments.user.userInfo','likes','dislikes']);
         $post = $postQuery->first();
-
         if ($result = $this->checkPostExist($post)) {
             return response()->json($result, 404);
         }
-
-        if ($result = $this->checkOwnPost($user, $post)) {
-            return response()->json($result, 200);
-        }
-
-        if ($result = $this->checkStatusPost($post)) {
-            return response()->json($result, 200);
-        }
-
-        $isLiked = $postQuery->whereHas('likes', function (Builder $query) use ($user) {
-            $query->where('user_id', $user->getKey());
-        })->first();
-
-        $comments = new ArrayToTree($post->comments->toArray());
-
-        $isFollowed = $user->whereHas('followings', function (Builder $query) use ($post) {
-            $query->where('target_id', $post);
-        })->frist();
-
-        return response()->json([
+        // $comments = new ArrayToTree($post->comments->toArray());
+        return  response()->json([
             'message' => "Lấy bài viết thành công.",
             'status' => 200,
             'data' => [
-                'post' => [
-                    ...$post,
-                    'comments' => $comments->buildTree(),
-                ],
-                'isLiked' => $isLiked ? true : false,
-                'isFollowed' => $isFollowed ? true : false
+                ...$post->toArray(),
+                // 'comments' => $comments->buildTree(),
             ]
         ], 200);
+
+
+        // if ( $result = $this->checkOwnPost($user, $post)) {
+        //     return response()->json($result, 200);
+        // }
+
+        // if ($result = $this->checkStatusPost($post)) {
+        //     return response()->json($result, 200);
+        // }
+        // $isLiked = $postQuery->whereHas('likes', function (Builder $query) use ($user) {
+        //     $query->where('user_id', $user->getKey());
+        // });
+        // $isFollowed = $user->whereHas('followings', function (Builder $query) use ($post) {
+        //     $query->where('target_id', $post);
+        // });
+        // return response()->json([
+        //     'message' => "Lấy bài viết thành công.",
+        //     'status' => 200,
+        //     'data' => [
+        //         'post' => [
+        //             ...$post->toArray(),
+        //             'comments' => $comments->buildTree(),
+        //         ],
+        //         'isLiked' => $isLiked->first() ? true : false,
+        //         'isFollowed' => $isFollowed->first() ? true : false
+        //     ]
+        // ], 200);
     }
-
-    public function store(CreatePostRequest $request): JsonResponse
-    {
+    public function getSavePosts(Request $request){
         $user = $request->user();
-
+        $posts = $user->savedPosts()->get();
+        return response(['data' => $posts]);
+    }
+    public function store(CreatePostRequest $request) : JsonResponse
+    {
+        // return $request->categories;
+        $user = $request->user();
         $slug = Str::slug($request->name, '-');
-
-        $existecPost = Post::findBySlug($slug)->first();
-
+        $existecPost = Post::where('slug',$slug)->first();
         if ($existecPost) {
             return response()->json([
-                'errorMessage' => "Tên bài viết trùng đã được sử dụng.",
-                'status' => 200
-            ], 200);
+                'message' => "Tên bài viết trùng đã được sử dụng.",
+                'status' => 400
+            ], 400);
         }
-
         try {
-            $post = Post::create([
-                'name' => $request->name,
-                'slug' => $slug,
-                'content' => $request->json('content'),
-                'author_id' => $user->getKey(),
-                'is_shown' => $request->get('is_shown')
-            ]);
-
-            return response()->json([
-                'message' => "Lưu bài viết thành công.",
-                'status' => 200,
-                'data' => $post
-            ], 200);
+            // return DB::transaction(function() use ($request,$slug,$user){
+                DB::beginTransaction();
+                $post = Post::create([
+                    'name' => $request->name,
+                    'slug' => $slug,
+                    'content' => $request->json('content'),
+                    'author_id' => $user->getKey(),
+                    'is_shown' => 1,
+                    'thumbnail' => $request->get('thumbnail'),
+                ]);
+                if($request->get('series')){
+                    $seriesQuery = Series::where('id',$request->get('series'))->first();
+                    if(!$seriesQuery) {
+                        DB::rollBack();
+                        return response()->json([
+                            'message' => "Không tìm thấy seriess",
+                            'status' => 404
+                        ], 404);  
+                    } 
+                    $seriesQuery->posts()->attach($post->getKey());
+                }
+                if($request->get('categories')){
+                    $post->categories()->attach($request->get('categories'));
+                }
+                DB::commit();
+                return response()->json([
+                    'message' => "Lưu bài viết thành công.",
+                    'status' => 200,
+                    'data' => $post,
+                ], 200);
+            // });
+          
         }
         catch (Exception $exception) {
+            DB::rollBack();
             return response()->json([
-                'errorMessage' => $exception->getMessage(),
+                'message' => $exception->getMessage(),
                 'status' => 500,
             ], 500);
         }
@@ -115,7 +145,7 @@ class PostController extends Controller
     {
         $user = $request->user();
 
-        $post = Post::findBySlug($slug)->first();
+        $post = Post::where('slug',$slug)->first();
 
         if ($result = $this->checkPostExist($post)) {
             return response()->json($result, 404);
@@ -148,7 +178,7 @@ class PostController extends Controller
     {
         $user = $request->user();
 
-        $post = Post::findBySlug($slug)->first();
+        $post = Post::where('slug',$slug)->first();
 
         if ($result = $this->checkPostExist($post)) {
             return response()->json($result, 404);
@@ -176,40 +206,66 @@ class PostController extends Controller
         }
     }
 
-    public function likePost(Request $request, string $slug): JsonResponse
+    public function vote(VotePost $request, string $slug)
     {
         $user = $request->user();
-
-        $query = Post::findBySlug($slug);
-
+        $action = $request->input('action');
+        $query = Post::where('slug',$slug);
+        $post = $query->first();
         if ($result = $this->checkPostExist($query->first())) {
             return response()->json($result, 404);
         }
-
         if ($result = $this->checkStatusPost($query->first())) {
             return response()->json($result, 404);
         }
         try {
-            DB::transaction(function () use ($user, $query) {
-                $query->likePosts()->attach($user->getKey());
+            return DB::transaction(function () use ($user, $query,$action,$post) {
+                switch ($action): 
+                    case 0 : {
+                        //like
+                        $post->likes()->syncWithoutDetaching($user->getKey());
+                        $post->dislikes()->detach($user->getKey());
+                        $post->update([
+                            'like' =>  $post->likes()->count() -  $post->dislikes()->count()
+                        ]);
+                        return response()->json([
+                            'message' => "ok",
+                            'status' => 200,
+                            "action" => 0
+                        ], 200); 
+                    }
+                    case 1: {
+                        //unlike and undislike 
+                        $post->likes()->detach($user->getKey());
+                        $post->dislikes()->detach($user->getKey());
+                        $post->update([
+                            'like' => $post->likes()->count() -  $post->dislikes()->count()
+                        ]);
+                        return response()->json([
+                            'message' => "ok",
+                            'status' => 200,
+                            "action" => 1
 
-                $isDisliked = $query->whereHas('dislikePosts', function (Builder $query) use ($user) {
-                    $query->where('user_id', $user->getKey());
-                })->first();
+                        ], 200);
+                    }
+                    case 2: {
+                        //dislike
+                            $post->likes()->detach($user->getKey());
+                            $post->dislikes()->syncWithoutDetaching($user->getKey());
+                            $post->update([
+                                'like' => $post->likes()->count() -  $post->dislikes()->count()
+                            ]);
+                            return response()->json([
+                                'message' => "ok",
+                                'status' => 200,
+                                "action" => 2
+                            ], 200);
+                    }
+                endswitch;
 
-                if (!$isDisliked) {
-                    $post = $query->first();
-
-                    $query->update([
-                        'like' => $post->like + 1
-                    ]);
-                }
             });
 
-            return response()->json([
-                'message' => "Thích bài viết thành công.",
-                'status' => 200,
-            ], 200);
+         
         }
         catch (Exception $exception) {
             return response()->json([
@@ -219,149 +275,10 @@ class PostController extends Controller
         }
     }
 
-    public function unlikePost(Request $request, string $slug): JsonResponse
-    {
-        $user = $request->user();
-
-        $query = Post::findBySlug($slug);
-
-        if ($result = $this->checkPostExist($query->first())) {
-            return response()->json($result, 404);
-        }
-
-        if ($result = $this->checkStatusPost($query->first())) {
-            return response()->json($result, 404);
-        }
-
-        $isDisliked = $query->whereHas('dislikePosts', function (Builder $query) use ($user) {
-            $query->where('user_id', $user->getKey());
-        })->first();
-
-        if ($isDisliked) {
-            return response()->json([
-                'message' => 'Hành động bị từ chối, bạn chưa thích bài viết này.',
-                'status' => 200,
-            ], 200);
-        }
-        try {
-            DB::transaction(function () use ($user, $query, $isDisliked) {
-                $query->likePosts()->detech($user->getKey());
-
-                if (!$isDisliked) {
-                    $post = $query->first();
-
-                    $query->update([
-                        'like' => $post->like - 1
-                    ]);
-                }
-            });
-
-            return response()->json([
-                'message' => "Bỏ thích bài viết thành công.",
-                'status' => 200,
-            ], 200);
-        } catch (Exception $exception) {
-            return response()->json([
-                'errorMessage' => $exception->getMessage(),
-                'status' => 500,
-            ], 500);
-        }
-    }
-
-    public function dislikePost(Request $request, string $slug): JsonResponse
-    {
-        $user = $request->user();
-
-        $query = Post::findBySlug($slug);
-
-        if ($result = $this->checkPostExist($query->first())) {
-            return response()->json($result, 404);
-        }
-
-        if ($result = $this->checkStatusPost($query->first())) {
-            return response()->json($result, 404);
-        }
-        try {
-            DB::transaction(function () use ($user, $query) {
-                $query->likePosts()->attach($user->getKey());
-
-                $isLiked = $query->whereHas('likePosts', function (Builder $query) use ($user) {
-                    $query->where('user_id', $user->getKey());
-                })->first();
-
-                if (!$isLiked) {
-                    $post = $query->first();
-
-                    $query->update([
-                        'like' => $post->like + 1
-                    ]);
-                }
-            });
-
-            return response()->json([
-                'message' => "Thích bài viết thành công.",
-                'status' => 200,
-            ], 200);
-        } catch (Exception $exception) {
-            return response()->json([
-                'errorMessage' => $exception->getMessage(),
-                'status' => 500,
-            ], 500);
-        }
-    }
-
-    public function undislikePost(Request $request, string $slug): JsonResponse
-    {
-        $user = $request->user();
-
-        $query = Post::findBySlug($slug);
-
-        if ($result = $this->checkPostExist($query->first())) {
-            return response()->json($result, 404);
-        }
-
-        if ($result = $this->checkStatusPost($query->first())) {
-            return response()->json($result, 404);
-        }
-
-        $isLiked = $query->whereHas('likePosts', function (Builder $query) use ($user) {
-            $query->where('user_id', $user->getKey());
-        })->first();
-
-        if ($isLiked) {
-            return response()->json([
-                'message' => 'Hành động bị từ chối, bạn chưa dislike bài viết này.',
-                'status' => 200,
-            ], 200);
-        }
-        try {
-            DB::transaction(function () use ($user, $query, $isLiked) {
-                $query->likePosts()->detech($user->getKey());
-
-                $post = $query->first();
-
-                if (!$isLiked) {
-                    $query->update([
-                        'like' => $post->like - 1
-                    ]);
-                }
-            });
-
-            return response()->json([
-                'message' => "Bỏ thích bài viết thành công.",
-                'status' => 200,
-            ], 200);
-        } catch (Exception $exception) {
-            return response()->json([
-                'errorMessage' => $exception->getMessage(),
-                'status' => 500,
-            ], 500);
-        }
-    }
-
+  
     public function countView(Request $request, string $slug): JsonResponse
     {
-        $post = Post::findBySlug($slug)->first();
+        $post = Post::where('slug',$slug)->first();
 
         if ($result = $this->checkPostExist($post)) {
             return response()->json($result, 404);
@@ -371,7 +288,7 @@ class PostController extends Controller
             return response()->json($result, 404);
         }
         try {
-            Post::findBySlug($slug)->update([
+            Post::where('slug',$slug)->update([
                 'view' => $post->view + 1
             ]);
 
@@ -391,7 +308,7 @@ class PostController extends Controller
     {
         $user = $request->user();
 
-        $post = Post::findBySlug($slug)->first();
+        $post = Post::where('slug',$slug)->first();
 
         if ($result = $this->checkPostExist($post)) {
             return response()->json($result, 404);
@@ -401,7 +318,7 @@ class PostController extends Controller
             return response()->json($result, 404);
         }
         try {
-            $user->postSaved()->attach($post->getKey());
+            $user->postSaved()->syncWithoutDetaching($post->getKey());
 
             return response()->json([
                 'message' => "Đánh dấu bài viết thành công.",
@@ -419,7 +336,7 @@ class PostController extends Controller
     {
         $user = $request->user();
 
-        $post = Post::findBySlug($slug)->first();
+        $post = Post::where('slug',$slug)->first();
 
         if ($result = $this->checkPostExist($post)) {
             return response()->json($result, 404);
@@ -447,7 +364,7 @@ class PostController extends Controller
     {
         $user = $request->user();
 
-        $postQuery = Post::findBySlug($slug);
+        $postQuery = Post::where('slug',$slug);
 
         if ($result = $this->checkPostExist($postQuery->first())) {
             return response()->json($result, 404);
@@ -485,7 +402,7 @@ class PostController extends Controller
         if ($user->getKey() !== $post->author_id) {
             return [
                 'message' => "Không có quyền thực hiện chức năng này.",
-                'status' => 200
+                'status' => 401
             ];
         }
 
@@ -497,7 +414,7 @@ class PostController extends Controller
         if (!$post->is_shown) {
             return [
                 'message' => "Bài viết đã bị ẩn.",
-                'status' => 200
+                'status' => 400
             ];
         }
 

@@ -19,6 +19,7 @@ class Series extends Model
 
     protected $fillable = [
         'name',
+        'slug',
         'description',
         'thumbnail',
         'is_shown',
@@ -37,7 +38,7 @@ class Series extends Model
 
     public function posts(): BelongsToMany
     {
-        return $this->belongsToMany(Series::class, 'series_posts', 'post_id', 'series_id');
+        return $this->belongsToMany(Post::class, 'series_posts','series_id','post_id');
     }
 
     public function scopeFindBySlug(Builder $query, string $slug)

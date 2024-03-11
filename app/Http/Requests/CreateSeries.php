@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\JsonResponse;
 
 class CreateSeries extends FormRequest
 {
@@ -17,9 +20,11 @@ class CreateSeries extends FormRequest
     {
         return [
             'name' => ['required', 'max:100'],
-            'description' => ['nullabel', 'max:1000'],
-            'thumbnail' => ['nullabel', 'max:1000'],
-            'is_showed' => ['required', 'boolean'],
+            'discription' => ['sometimes','string'],
+            'posts' => ['sometimes','array'],
+            'posts.*' => ['exists:posts,id'],
+            'thumbnail' => ['sometimes','string']
         ];
     }
+   
 }

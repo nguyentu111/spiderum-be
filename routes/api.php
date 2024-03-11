@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\SignUpController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\NewfeedController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SeriesController;
@@ -31,13 +32,22 @@ Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'
 Route::get('/new-feed',[NewfeedController::class,'getNewfeed']);
 Route::get('/top-view',[NewfeedController::class,'getTopView']);
 Route::get('/categories',[CategoryController::class,'index']);
-
+Route::get('/posts/{slug}', [PostController::class, 'getPost']);
+Route::get('/comments',[CommentController::class,'getComments']);
 
 Route::prefix('auth')->group(function () {
     Route::prefix('/users')->group(function () {
         Route::post('get-email-by-token', [UserController::class, 'getEmailByToken']);
         Route::post('store', [UserController::class, 'store'])->name('store-user');
     });
+});
+
+Route::get('/users/{user}',[UserController::class,'getUser']);
+
+Route::get('/posts', [PostController::class, 'getUserPosts']);
+Route::prefix('/series')->group(function () {
+    Route::get('/', [SeriesController::class, 'index']);
+    Route::get('/{slug}', [SeriesController::class, 'show']);
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -64,28 +74,35 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::prefix('/series')->group(function () {
-        Route::get('/', [SeriesController::class, 'index']);
+        // Route::get('/', [SeriesController::class, 'index']);
+        // Route::get('/{slug}', [SeriesController::class, 'show']);
         Route::post('/', [SeriesController::class, 'store']);
         Route::post('/{slug}', [SeriesController::class, 'update']);
         Route::delete('/{slug}', [SeriesController::class, 'destroy']);
-        Route::post('/add/{slugPost}/into/{slugSeries}', [SeriesController::class, 'addPostToSeries']);
+        Route::post('/add/{slugPost}/to/{slugSeries}', [SeriesController::class, 'addPostToSeries']);
         Route::post('/remove/{slugPost}/in/{slugSeries}', [SeriesController::class, 'removePostInSeries']);
     });
 
+    Route::prefix('/save-posts')->group(function () {
+        Route::get('/', [PostController::class, 'getSavePosts']);
+        Route::post('/{slug}', [PostController::class, 'savePost']);
+        Route::post('/unsave/{slug}', [PostController::class, 'unsavePost']);
+    });
     Route::prefix('/posts')->group(function () {
-        Route::get('/', [PostController::class, 'getUserPosts']);
-        Route::get('/{slug}', [PostController::class, 'getPost']);
+        // Route::get('/{slug}', [PostController::class, 'getPost']);
         Route::post('/', [PostController::class, 'store']);
         Route::patch('/show/{slug}', [PostController::class, 'showPost']);
         Route::patch('/hide/{slug}', [PostController::class, 'hidePost']);
-        Route::patch('/like/{slug}', [PostController::class, 'likePost']);
-        Route::patch('/unlike/{slug}', [PostController::class, 'unlikePost']);
+        Route::patch('/vote/{slug}', [PostController::class, 'vote']);
         Route::patch('/count-view/{slug}', [PostController::class, 'countView']);
-        Route::post('/save/{slug}', [PostController::class, 'savePost']);
-        Route::post('/unsave/{slug}', [PostController::class, 'unsavePost']);
+       
         Route::delete('/{slug}', [PostController::class, 'destroy']);
     });
-
+    Route::prefix('/comments')->group(function(){
+        Route::post('/',[ CommentController::class,'comment']);
+        Route::delete('/{comment}',[ CommentController::class,'delete']);
+        Route::post('/vote/{comment}',[ CommentController::class,'vote']);
+    });
     Route::post('/upload-image', [UploadImageController::class, '__invoke']);
 });
 

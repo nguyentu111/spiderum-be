@@ -14,7 +14,7 @@ class NewfeedController extends Controller
         $perPage = $request->per_page;
         switch ($request->sort) {
             case SortNewFeedEnum::Hot->value: {
-                $posts = Post::query()->orderBy('view', 'desc')->with(['author','comments'])->paginate($perPage)->withQueryString();
+                $posts = Post::query()->orderBy('view', 'desc')->with(['author','categories','series','tags','comments' => fn ($query) => $query->orderBy('created_at','desc' ),'comments.user.userInfo','likes','dislikes'])->paginate($perPage)->withQueryString();
 
                 return response()->json([
                     'message' => 'Lấy danh sách bài viết nổi bật thành công.',
@@ -24,7 +24,7 @@ class NewfeedController extends Controller
             }
 
             case SortNewFeedEnum::New->value: {
-                $posts = Post::query()->orderBy('created_at', 'desc')->with(['author','comments'])->paginate($perPage)->withQueryString();
+                $posts = Post::query()->orderBy('created_at', 'desc')->with(['author','categories','series','tags','comments' => fn ($query) => $query->orderBy('created_at','desc' ),'comments.user.userInfo','likes','dislikes'])->paginate($perPage)->withQueryString();
 
                 return response()->json([
                     'message' => 'Lấy danh sách bài viết mới thành công.',
@@ -80,7 +80,7 @@ class NewfeedController extends Controller
     }
     public function getTopView(Request $request){
         $limit = $request->limit ?? 10;
-        $posts = Post::orderBy('view', 'desc')->with(['author','comments'])->take($limit)->get();
+        $posts = Post::orderBy('view', 'desc')->with(['author','categories','series','tags','comments' => fn ($query) => $query->orderBy('created_at','desc' ),'comments.user.userInfo','likes','dislikes'])->take($limit)->get();
         return    response()->json([
             'status' => 200,
             'data' => $posts,

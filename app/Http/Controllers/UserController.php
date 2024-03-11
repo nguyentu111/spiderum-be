@@ -48,7 +48,11 @@ class UserController extends Controller
         }
         
     }
-
+    public function getUser($user){
+        $user = User::query()->where('username',$user)->orWhere('id',$user)->first();
+        if(!$user) return response(['message' => 'Không tìm thấy user'],404);
+        return $user;
+    }
     public function store(CreateUser $request)
     {
         try {

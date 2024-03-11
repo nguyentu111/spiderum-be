@@ -16,10 +16,9 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, Uuidable;
 
-    protected $primary = 'id';
+    protected $primaryKey  = 'id';
 
     public $incrementing = false;
-
     /**
      * The attributes that are mass assignable.
      *
@@ -113,7 +112,7 @@ class User extends Authenticatable
         return $this->hasMany(Post::class, 'author_id', 'id');
     }
 
-    public function postSaved(): BelongsToMany
+    public function savedPosts(): BelongsToMany
     {
         return $this->belongsToMany(Post::class, 'user_save_posts', 'user_id', 'post_id');
     }

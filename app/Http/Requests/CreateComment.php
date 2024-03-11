@@ -16,6 +16,7 @@ class CreateComment extends FormRequest
         return [
             'content' => ['required', 'string', 'max:1000'],
             'parent_id' => ['sometimes', 'uuid'],
+            'post_id' => ['required','uuid']
         ];
     }
 }

@@ -18,7 +18,12 @@ class Post extends Model
     protected $primary = 'id';
 
     public $incrementing = false;
-
+  /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['comments_count','is_saved'];
     protected $fillable = [
         'name',
         'slug',
@@ -38,7 +43,7 @@ class Post extends Model
 
     public function likes(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'user_like_posts', 'post_id', 'user_id');
+        return $this->belongsToMany(User::class, 'user_like_posts','post_id', 'user_id');
     }
 
     public function dislikes(): BelongsToMany
@@ -74,16 +79,40 @@ class Post extends Model
 
     public function series(): BelongsToMany
     {
-        return $this->belongsToMany(Post::class, 'series_posts', 'series_id', 'post_id');
+        return $this->belongsToMany(Series::class, 'series_posts', 'post_id','series_id');
     }
-
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class, 'post_categories', 'post_id','category_id');
+    }
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'post_tags', 'post_id','tag_id');
+    }
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class, 'post_id');
     }
-
-    public function scopeFindBySlug(Builder $query, string $slug)
-    {
-        $query->where('slug', $slug);
+    public function commentsCount() : Attribute{
+        return new Attribute(
+            get: fn () => $this->comments()->count()
+        );
     }
+    public function savedByUsers(){
+        return $this->belongsToMany(User::class,'user_save_posts','post_id','user_id');
+    }
+    public function isSaved(): Attribute {
+        $user = auth()->user();
+        
+        return new Attribute(
+            get :function () use ($user){
+                if($user) {
+                    return $this->savedByUsers()->where('user_id',$user->id)->exists();
+                }
+                else return false
+                ;
+            }
+        );
+    }
+
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ExistingCategories;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreatePostRequest extends FormRequest
@@ -14,10 +15,13 @@ class CreatePostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'thumnail' => ['required', 'string', 'max:1000'],
+            'thumbnail' => ['required', 'string', 'max:1000'],
             'name' => ['required', 'string', 'max:255'],
             'content' => ['required', 'json'],
             'is_shown' => ['sometimes', 'boolean'],
+            'series' => ['sometimes','exists:series,id'],
+            'categories' => ['required','array', new ExistingCategories],
+            'categories.*' => ['required', 'string'],
         ];
     }
 }
