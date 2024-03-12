@@ -14,7 +14,7 @@ class NewfeedController extends Controller
         $perPage = $request->per_page;
         switch ($request->sort) {
             case SortNewFeedEnum::Hot->value: {
-                $posts = Post::query()->orderBy('view', 'desc')->with(['author','categories','series','tags','comments' => fn ($query) => $query->orderBy('created_at','desc' ),'comments.user.userInfo','likes','dislikes'])->paginate($perPage)->withQueryString();
+                $posts = Post::query()->orderBy('view', 'desc')->with(['author','categories','tags'])->paginate($perPage)->withQueryString();
 
                 return response()->json([
                     'message' => 'Lấy danh sách bài viết nổi bật thành công.',
@@ -24,7 +24,7 @@ class NewfeedController extends Controller
             }
 
             case SortNewFeedEnum::New->value: {
-                $posts = Post::query()->orderBy('created_at', 'desc')->with(['author','categories','series','tags','comments' => fn ($query) => $query->orderBy('created_at','desc' ),'comments.user.userInfo','likes','dislikes'])->paginate($perPage)->withQueryString();
+                $posts = Post::query()->orderBy('created_at', 'desc')->with(['author','categories','tags'])->paginate($perPage)->withQueryString();
 
                 return response()->json([
                     'message' => 'Lấy danh sách bài viết mới thành công.',
@@ -34,12 +34,13 @@ class NewfeedController extends Controller
             }
 
             case SortNewFeedEnum::Follow->value: {
-                $user = $request->user();
+                $user = auth('sanctum')->user();
+                if(!$user) return response()->json(['message' => 'unauthenticated'],401);
                 $userFollowerIds = $user->followerIds;
-
                 $posts = Post::query()
                     ->whereIn('author_id', $userFollowerIds)
                     ->orderBy('created_at', 'desc')
+                    ->with(['author','categories','tags'])
                     ->paginate($perPage)->withQueryString();
 
                 return response()->json([
@@ -51,7 +52,9 @@ class NewfeedController extends Controller
 
             case SortNewFeedEnum::Controversial->value: {
                 $posts = Post::query()
-                    ->orderBy('comment', 'desc')
+                    ->withCount('comments')
+                    ->orderBy('comments_count','desc')
+                    ->with(['author','categories','tags'])
                     ->paginate($perPage)->withQueryString();
 
                 return response()->json([
@@ -62,7 +65,8 @@ class NewfeedController extends Controller
             }
             case SortNewFeedEnum::Top->value: {
                 $posts = Post::query()
-                    ->orderBy('view', 'desc')
+                    ->orderBy('like', 'desc')
+                    ->with(['author','categories','tags'])
                     ->paginate($perPage)->withQueryString();
 
                 return response()->json([
@@ -80,7 +84,7 @@ class NewfeedController extends Controller
     }
     public function getTopView(Request $request){
         $limit = $request->limit ?? 10;
-        $posts = Post::orderBy('view', 'desc')->with(['author','categories','series','tags','comments' => fn ($query) => $query->orderBy('created_at','desc' ),'comments.user.userInfo','likes','dislikes'])->take($limit)->get();
+        $posts = Post::orderBy('view', 'desc')->with(['author','categories','tags'])->take($limit)->get();
         return    response()->json([
             'status' => 200,
             'data' => $posts,

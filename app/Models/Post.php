@@ -23,7 +23,8 @@ class Post extends Model
      *
      * @var array
      */
-    protected $appends = ['comments_count','is_saved'];
+    protected $appends = ['comments_count','is_saved','user_action','point'];
+    protected $with = ['author','categories'];
     protected $fillable = [
         'name',
         'slug',
@@ -102,15 +103,35 @@ class Post extends Model
         return $this->belongsToMany(User::class,'user_save_posts','post_id','user_id');
     }
     public function isSaved(): Attribute {
-        $user = auth()->user();
-        
+        $user = auth('sanctum')->user();
         return new Attribute(
             get :function () use ($user){
                 if($user) {
                     return $this->savedByUsers()->where('user_id',$user->id)->exists();
                 }
-                else return false
-                ;
+                else return false;
+            }
+        );
+    }
+    public function userAction() :Attribute{
+        $user = auth('sanctum')->user();
+        return new Attribute(
+            get :function () use ($user){
+                if($user) {
+                    $isLiked = $this->likes()->where('user_id',$user->id)->exists();
+                    $isDisLiked = $this->dislikes()->where('user_id',$user->id)->exists();
+                    return   $isLiked  ?  1 :  ( $isDisLiked ?  -1 : 0);
+                }
+                else return false;
+            }
+        );
+    }
+    public function point():Attribute {
+        return new Attribute(
+            get :function () {
+                    $likeCount = $this->likes()->count();
+                    $dislikeCount = $this->dislikes()->count();
+                    return    $likeCount - $dislikeCount;
             }
         );
     }

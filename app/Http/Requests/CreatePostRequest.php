@@ -16,6 +16,7 @@ class CreatePostRequest extends FormRequest
     {
         return [
             'thumbnail' => ['required', 'string', 'max:1000'],
+            'description' => ['sometimes', 'string', 'max:1000'],
             'name' => ['required', 'string', 'max:255'],
             'content' => ['required', 'json'],
             'is_shown' => ['sometimes', 'boolean'],

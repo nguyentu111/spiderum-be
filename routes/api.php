@@ -83,11 +83,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/remove/{slugPost}/in/{slugSeries}', [SeriesController::class, 'removePostInSeries']);
     });
 
-    Route::prefix('/save-posts')->group(function () {
-        Route::get('/', [PostController::class, 'getSavePosts']);
-        Route::post('/{slug}', [PostController::class, 'savePost']);
-        Route::post('/unsave/{slug}', [PostController::class, 'unsavePost']);
-    });
+  
+    Route::get('/saved-posts', [PostController::class, 'getSavePosts']);
     Route::prefix('/posts')->group(function () {
         // Route::get('/{slug}', [PostController::class, 'getPost']);
         Route::post('/', [PostController::class, 'store']);
@@ -95,7 +92,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::patch('/hide/{slug}', [PostController::class, 'hidePost']);
         Route::patch('/vote/{slug}', [PostController::class, 'vote']);
         Route::patch('/count-view/{slug}', [PostController::class, 'countView']);
-       
+        Route::post('/save/{slug}', [PostController::class, 'savePost']);
+        Route::post('/unsave/{slug}', [PostController::class, 'unsavePost']);
+
         Route::delete('/{slug}', [PostController::class, 'destroy']);
     });
     Route::prefix('/comments')->group(function(){

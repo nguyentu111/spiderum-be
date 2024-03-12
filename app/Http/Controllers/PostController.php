@@ -14,22 +14,25 @@ use Exception;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
-    public function getUserPosts(GetPosts $request): JsonResponse
+    public function getUserPosts(GetPosts $request)
     {
+      
+      
         $user = User::query()->where('username', $request->input('username'))->first();
         if(!$user) return response(['message' => 'Không tìm thấy người dùng này'],404);
         $posts = null;
         if($request->has('series')){
             $series =  $user->series()->where('slug',$request->input('series'))->first();
-            if($series) $posts = $series->posts()->with(['author','categories','series','tags','comments' => fn ($query) => $query->orderBy('created_at','desc' ),'comments.user.userInfo','likes','dislikes'])->paginate();
+            if($series) $posts = $series->posts()->paginate();
         
         }
-        else $posts =  $user->posts()->with(['author','categories','series','tags','comments' => fn ($query) => $query->orderBy('created_at','desc' ),'comments.user.userInfo','likes','dislikes'])->paginate();
+        else $posts =  $user->posts()->paginate();
         return response()->json([
             'message' => 'Lấy danh sách bài viết thành công.',
             'status' => 200,
@@ -39,7 +42,7 @@ class PostController extends Controller
 
     public function getPost(Request $request, string $slug): JsonResponse
     {
-        $postQuery = Post::where('slug',$slug)->with(['author','categories','series','tags','comments' => fn ($query) => $query->orderBy('created_at','desc' ),'comments.user.userInfo','likes','dislikes']);
+        $postQuery = Post::where('slug',$slug);
         $post = $postQuery->first();
         if ($result = $this->checkPostExist($post)) {
             return response()->json($result, 404);
@@ -107,10 +110,11 @@ class PostController extends Controller
                     'content' => $request->json('content'),
                     'author_id' => $user->getKey(),
                     'is_shown' => 1,
-                    'thumbnail' => $request->get('thumbnail'),
+                    'thumbnail' => $request->input('thumbnail'),
+                    'description' => $request->input('description')
                 ]);
-                if($request->get('series')){
-                    $seriesQuery = Series::where('id',$request->get('series'))->first();
+                if($request->has('series')){
+                    $seriesQuery = Series::where('id',$request->input('series'))->first();
                     if(!$seriesQuery) {
                         DB::rollBack();
                         return response()->json([
@@ -120,8 +124,8 @@ class PostController extends Controller
                     } 
                     $seriesQuery->posts()->attach($post->getKey());
                 }
-                if($request->get('categories')){
-                    $post->categories()->attach($request->get('categories'));
+                if($request->has('categories')){
+                    $post->categories()->attach($request->input('categories'));
                 }
                 DB::commit();
                 return response()->json([
@@ -318,7 +322,7 @@ class PostController extends Controller
             return response()->json($result, 404);
         }
         try {
-            $user->postSaved()->syncWithoutDetaching($post->getKey());
+            $user->savedPosts()->syncWithoutDetaching($post->getKey());
 
             return response()->json([
                 'message' => "Đánh dấu bài viết thành công.",
@@ -346,7 +350,7 @@ class PostController extends Controller
             return response()->json($result, 404);
         }
         try {
-            $user->postSaved()->detach($post->getKey());
+            $user->savedPosts()->detach($post->getKey());
 
             return response()->json([
                 'message' => "Bỏ đánh dấu bài viết thành công.",
