@@ -50,7 +50,7 @@ class UserFollowerController extends Controller
             ]);
         }
 
-        $user->followers()->attach($target->getKey());
+        $user->followings()->syncWithoutDetaching($target->getKey());
 
         return response()->json([
             'status' => 200,
@@ -75,7 +75,7 @@ class UserFollowerController extends Controller
             ], 404);
         }
 
-        $result = $user->followers()->detach($target->getKey());
+        $result = $user->followings()->detach($target->getKey());
 
         if ($result) {
             return response()->json([

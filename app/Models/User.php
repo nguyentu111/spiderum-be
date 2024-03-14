@@ -17,6 +17,8 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable, Uuidable;
 
     protected $primaryKey  = 'id';
+    protected $with = ['userInfo'];
+    protected $appends = ['is_followed'];
 
     public $incrementing = false;
     /**
@@ -111,6 +113,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Post::class, 'author_id', 'id');
     }
+    public function drafts(): HasMany
+    {
+        return $this->hasMany(PostDraft::class, 'author_id', 'id');
+    }
 
     public function savedPosts(): BelongsToMany
     {
@@ -130,5 +136,14 @@ class User extends Authenticatable
     public function dislikeComments(): BelongsToMany
     {
         return $this->belongsToMany(Comment::class, 'user_dislike_comments', 'comment_id', 'user_id');
+    }
+    public function isFollowed() :Attribute {
+        return Attribute::make(
+            get: function(){
+                $user = auth('sanctum')->user();
+                if(!$user) return false;
+                return $this->followers()->where('source_id',$user->id)->exists();
+            }
+        );
     }
 }

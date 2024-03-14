@@ -21,7 +21,15 @@ class CategoryController extends Controller
             'data' => $categories,
         ], 200);
     }
-
+    public function show(string $slug):JsonResponse 
+    {
+        $category = Category::where('slug' ,$slug)->with('tags')->first();
+        return response()->json([
+            'message' => 'Lấy thông tin thể loại thành công.',
+            'status' => 200,
+            'data' => $category,
+        ], 200);
+    }
     public function store(CreateCategory $request): JsonResponse
     {
         $slug = Str::slug($request->name, '-');

@@ -35,6 +35,7 @@ class Post extends Model
         'comment',
         'is_shown',
         'author_id',
+        'description'
     ];
 
     public function author(): BelongsTo
@@ -122,7 +123,7 @@ class Post extends Model
                     $isDisLiked = $this->dislikes()->where('user_id',$user->id)->exists();
                     return   $isLiked  ?  1 :  ( $isDisLiked ?  -1 : 0);
                 }
-                else return false;
+                else return 0;
             }
         );
     }

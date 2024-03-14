@@ -22,8 +22,11 @@ class GetPosts extends FormRequest
     public function rules(): array
     {
         return [
-            'username' => ['required','exists:users,username'],
-            'series' => ['sometimes','exists:series,slug']
+            'username' => ['sometimes','exists:users,username'],
+            'series' => ['sometimes','exists:series,slug'],
+            'category' => ['sometimes','exists:categories,slug'],
+            'except_cat' => ['sometimes','exists:categories,slug'],
+
         ];
     }
 }

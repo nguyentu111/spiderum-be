@@ -19,7 +19,8 @@ class NewfeedRequest extends FormRequest
         return [
             'sort' => ['required', Rule::enum(SortNewFeedEnum::class)],
             'page' => ['required', 'integer', 'min:1'],
-            'per_page' => ['sometimes', 'integer', 'min:5']
+            'per_page' => ['sometimes', 'integer', 'min:5'],
+            'category' => ['sometimes','exists:categories,slug']
         ];
     }
 }

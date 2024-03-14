@@ -4,42 +4,70 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreatePostRequest;
 use App\Http\Requests\GetPosts;
-use App\Http\Requests\PaginationRequest;
 use App\Http\Requests\VotePost;
+use App\Models\Category;
 use App\Models\Post;
 use App\Models\Series;
 use App\Models\User;
 use App\Supports\ArrayToTree;
 use Exception;
-use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
-    public function getUserPosts(GetPosts $request)
+    public function getPosts(GetPosts $request)
     {
-      
-      
-        $user = User::query()->where('username', $request->input('username'))->first();
-        if(!$user) return response(['message' => 'Không tìm thấy người dùng này'],404);
-        $posts = null;
-        if($request->has('series')){
-            $series =  $user->series()->where('slug',$request->input('series'))->first();
-            if($series) $posts = $series->posts()->paginate();
-        
+        $posts = Post::query();
+        if($request->has('username')){
+            $user = User::query()->where('username', $request->input('username'))->first();
+            $posts  = $posts->where('author_id',$user->id);
         }
-        else $posts =  $user->posts()->paginate();
+        if($request->has('series')){
+            $series =  Series::where('slug',$request->input('series'))->first();
+            $posts  = $posts->whereHas('series',function ($query) use ($series){
+                $query->where('series_id', $series->id);
+            });
+        }
+        if($request->has('category')){
+            $category = Category::where('slug',$request->input('category'))->first();
+            $posts  = $posts->whereHas('categories',function ($query) use ($category){
+                $query->where('category_id', $category->id);
+            });
+        }
+        if($request->has('except_cat')){
+            $category = Category::where('slug',$request->input('except_cat'))->first();
+            $posts  = $posts->whereDoesntHave('categories',function ($query) use ($category){
+                $query->where('category_id', $category->id);
+            });
+        }
+        if($request->has('random')){
+            $posts  = $posts->inRandomOrder();
+        }
         return response()->json([
             'message' => 'Lấy danh sách bài viết thành công.',
             'status' => 200,
-            'data' => $posts
+            'data' => $posts->paginate(),
         ]);
     }
-
+    // public function getCatPosts(GetPosts $request)
+    // {
+      
+      
+    //     $posts = null;
+    //     if($request->has('category')){
+    //         $posts = $series->posts()->paginate();
+        
+    //     }
+    //     else $posts =  $user->posts()->paginate();
+    //     return response()->json([
+    //         'message' => 'Lấy danh sách bài viết thành công.',
+    //         'status' => 200,
+    //         'data' => $posts
+    //     ]);
+    // }
     public function getPost(Request $request, string $slug): JsonResponse
     {
         $postQuery = Post::where('slug',$slug);
@@ -93,7 +121,7 @@ class PostController extends Controller
     {
         // return $request->categories;
         $user = $request->user();
-        $slug = Str::slug($request->name, '-');
+        $slug = Str::slug($request->name, '-').'-'.Str::take( Str::uuid(),10);
         $existecPost = Post::where('slug',$slug)->first();
         if ($existecPost) {
             return response()->json([
@@ -229,9 +257,7 @@ class PostController extends Controller
                         //like
                         $post->likes()->syncWithoutDetaching($user->getKey());
                         $post->dislikes()->detach($user->getKey());
-                        $post->update([
-                            'like' =>  $post->likes()->count() -  $post->dislikes()->count()
-                        ]);
+                       
                         return response()->json([
                             'message' => "ok",
                             'status' => 200,
@@ -242,9 +268,7 @@ class PostController extends Controller
                         //unlike and undislike 
                         $post->likes()->detach($user->getKey());
                         $post->dislikes()->detach($user->getKey());
-                        $post->update([
-                            'like' => $post->likes()->count() -  $post->dislikes()->count()
-                        ]);
+                       
                         return response()->json([
                             'message' => "ok",
                             'status' => 200,
@@ -256,9 +280,7 @@ class PostController extends Controller
                         //dislike
                             $post->likes()->detach($user->getKey());
                             $post->dislikes()->syncWithoutDetaching($user->getKey());
-                            $post->update([
-                                'like' => $post->likes()->count() -  $post->dislikes()->count()
-                            ]);
+                          
                             return response()->json([
                                 'message' => "ok",
                                 'status' => 200,
@@ -373,7 +395,6 @@ class PostController extends Controller
         if ($result = $this->checkPostExist($postQuery->first())) {
             return response()->json($result, 404);
         }
-
         try {
             $postQuery->delete();
 
@@ -388,6 +409,8 @@ class PostController extends Controller
             ], 500);
         }
     }
+
+ 
 
     private function checkPostExist(Post $post): array|null
     {
