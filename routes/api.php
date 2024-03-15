@@ -103,7 +103,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
     Route::prefix('/drafts')->group(function () {
         Route::get('/',[PostDraftController::class,'index']);
+        Route::get('/{draft}',[PostDraftController::class,'show']);
         Route::post('/',[PostDraftController::class,'store']);
+        Route::delete('/{draft}',[PostDraftController::class,'delete']);
     });
     Route::prefix('/comments')->group(function(){
         Route::post('/',[ CommentController::class,'comment']);

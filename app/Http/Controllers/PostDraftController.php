@@ -15,6 +15,18 @@ class PostDraftController extends Controller
             'data'=>$user->drafts()->get(),
         ]);
     }
+    public function show(Request $request , PostDraft $draft){
+        $user = $request->user();
+        $draftAuthor = $draft->author()->first();
+        if($user->id !== $draftAuthor->id) {
+            return response()->json([
+                'message'=> 'Không có quyền sửa bản nháp này',
+            ],403);
+        };
+        return response()->json([
+            'data'=>$draft,
+        ]);
+    }
     public function store(CreateOrUpdateDraftPostRequest $request){    
         $user = $request->user();
         $id = $request->input('id');
@@ -41,5 +53,8 @@ class PostDraftController extends Controller
         ]);
         return response()->json(['messge' => 'ok'],200);
     }
-      
+    public function delete(PostDraft $draft){
+        $draft->delete();
+        return response()->json(['data' => 'ok'],200);
+    }
 }
