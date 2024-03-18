@@ -113,5 +113,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/vote/{comment}',[ CommentController::class,'vote']);
     });
     Route::post('/upload-image', [UploadImageController::class, '__invoke']);
+    Route::prefix('/users')->group(function () {
+        Route::put('/update-account', [UserController::class, 'update']);
+        // Route::post('store', [UserController::class, 'store'])->name('store-user');
+    });
 });
 

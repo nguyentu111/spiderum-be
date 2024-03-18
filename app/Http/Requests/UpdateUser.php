@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\GenderEnum;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateUser extends FormRequest
 {
@@ -22,21 +24,6 @@ class UpdateUser extends FormRequest
     public function rules(): array
     {
         return [
-            'id_number' => [
-                'sometimes',
-                'regex:/[0-9]/',
-                'not_regex:/[a-z]/',
-                'max:20'
-            ],
-            'phone_number' => [
-                'sometimes',
-                'regex:/(0)[0-9]/',
-                'not_regex:/[a-z]/',
-            ],
-            'email' => [
-                'sometimes',
-                'email',
-            ],
             'dob' => [
                 'sometimes',
                 'date',
@@ -45,14 +32,21 @@ class UpdateUser extends FormRequest
                 'required',
                 'max:100',
             ],
-            'address' => [
+            'description' => [
                 'nullable',
-                'string',
                 'max:255'
             ],
-            'description' => [
-                'nullabel',
-                'max:255'
+            'avatar' => [
+                'sometimes',
+                'string',
+            ],
+            'wallpaper' => [
+                'sometimes',
+                'string',
+                'nullable'
+            ],
+            'gender' => [
+                Rule::enum(GenderEnum::class)
             ]
         ];
     }

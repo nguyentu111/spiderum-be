@@ -108,6 +108,7 @@ class UserController extends Controller
 
     public function update(UpdateUser $request)
     {
+        
         $user = $request->user();
 
         if (!$user) {
@@ -117,33 +118,32 @@ class UserController extends Controller
             ]);
         }
 
-        Validator::make($request->all(), [
-            'email' => Rule::unique('user_infos', 'email')->ignore($user->userInfo),
-        ])->validated();
+        // Validator::make($request->all(), [
+        //     'email' => Rule::unique('user_infos', 'email')->ignore($user->userInfo),
+        // ])->validated();
 
         try {
             $updatedUser = DB::transaction(function () use ($request, $user) {
                 $user->update([
-                    'alias' => $request->get('alias')
+                    'alias' => $request->input('alias'),
+                    'avatar_url' => $request->input('avatar')
                 ]);
                 $user->userInfo()->update([
-                    'email' => $request->get('email'),
-                    'phone_number' => $request->get('phone_number'),
-                    'id_number' => $request->get('id_number'),
-                    'dob' => $request->get('dob'),
-                    'description' => $request->get('description'),
-                    'address' => $request->address
+                    'dob' => $request->input('dob'),
+                    'description' => $request->input('description'),
+                    'gender' =>  $request->input('gender'),
+                    'wallpaper' => $request->input('wallpaper')
                 ]);
 
                 return $user;
             });
-            $userInfo = $updatedUser->userInfo;
-            $userResponse = new UserResponse($updatedUser, $userInfo);
 
             return response()->json([
                 'status' => 200,
                 'message' => 'Cập nhật thông tin thành công.',
-                'data' => $userResponse->getResponse()
+                'data' =>   $updatedUser->load('userInfo'),
+                'avatar' => $request->input('avatar'),
+                'wallpaper' => $request->input('wallpaper')
             ]);
         }
         catch (Exception $exception) {
